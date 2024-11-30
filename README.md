@@ -24,36 +24,38 @@ Ensure you have the following installed on your machine:
    cd Smart-Garment-Chain/apps/backend/python-api
 
 2. **Set up a Virtual Environment**   
-Create and activate a virtual environment:
+   Create and activate a virtual environment:
 
-_For Windows:_
-   ```bash
-  python -m venv myenv
+   _For Windows:_
+      ```bash
+     python -m venv myenv
+      ```
+    ```bash
+     myenv\Scripts\activate
+     ```
+   _For macOS/Linux:_
+   
+    ```bash
+   python -m venv myenv
    ```
- ```bash
-  myenv\Scripts\activate
-  ```
-_For macOS/Linux:_
-
- ```bash
-python -m venv myenv
-```
- ```bash
-source myenv/bin/activate
-```
+    ```bash
+   source myenv/bin/activate
+   ```
 
 3. **Install Poetry**
-Install Poetry for dependency management:
 
- ```bash
-pip install poetry
-```
+   Install Poetry for dependency management:
+   
+    ```bash
+   pip install poetry
+   ```
 4. **Install Dependencies**
-Use Poetry to install the project dependencies:
 
- ```bash
-poetry install
-```
+   Use Poetry to install the project dependencies:
+   
+    ```bash
+   poetry install
+   ```
 
 
 ## 🚀 Running the Application
