@@ -11,3 +11,8 @@ __pycache__/
 
 # Ignore logs
 *.log
+
+# react dependencies
+/node_modules
+/.pnp
+.pnp.js
