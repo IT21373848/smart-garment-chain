@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import PackingVisualizer from './components/PackingVisualizer';
+import PredictTime from './components/PredictTime';
 
 function App() {
   // State to manage the active tab
@@ -62,7 +63,7 @@ function App() {
               <PackingVisualizer /> 
             </div>
           )}
-          {activeTab === 2 && <div>Tab 2 Content</div>}
+          {activeTab === 2 && <div><PredictTime/></div>}
           {activeTab === 3 && <div>Tab 3 Content</div>}
           {activeTab === 4 && <div>Tab 4 Content</div>} 
         </div>
