@@ -30,12 +30,24 @@ function PredictTime({ }: Props) {
 
     const handleEstimation = async () => {
         try {
+            setError("");
+            if (qty > 10000) {
+                setError("Quantity of order must be less than 10000");
+                return
+            }
+
+            if (employees < 10) {
+                setError("Number of employees must be greater than 10");
+                return
+            }
+            const elpTime = (Math.floor(qty / (employees * lines)))
+            console.log(elpTime);
             const resp = await axios.post(`${SERVER_URI}/predict`, {
                 "Type of clothing": item,
                 "Production line number": lines,
                 "Number of employees": employees,
                 "Quantity of order": qty,
-                "Elapsed time": time
+                "Elapsed time": elpTime
             })
 
             console.log(resp.data);
@@ -52,7 +64,7 @@ function PredictTime({ }: Props) {
             <h1>Predict Time</h1>
             <div className='flex flex-col gap-3 p-4 rounded-xl bg-gray-500/50'>
                 <div className='flex flex-col bg-[#F3D49B] rounded-xl p-4 items-center justify-center gap-3 text-black w-full'>
-                    {error && <p className='text-red-500'>{error}</p>}
+                    {error && <p className='text-red-500 text-xs'>{error}</p>}
                     <label className='text-white' htmlFor="item">Item</label>
                     <select className='text-black' name="item" id="item" value={item} onChange={(e) => setItem(e.target.value)}>
                         {uniqueClothingItems.map((item) => (
@@ -70,7 +82,7 @@ function PredictTime({ }: Props) {
                     <input type="number" name="employees" id="employees" value={employees} onChange={(e) => setEmployees(parseInt(e.target.value))} />
 
                     {/* elapsed time */}
-                    <div>
+                    <div className='hidden'>
                         <p className='text-white'>Elapsed Time: {time || 0}</p>
                         <input type="number" value={time} onChange={(e) => setTime(parseInt(e.target.value))} />
                     </div>
