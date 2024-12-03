@@ -8,3 +8,4 @@ index = Blueprint('index', __name__)
 def predict():
     # Call the service function to handle the prediction
     return predict_man_hours()
+
