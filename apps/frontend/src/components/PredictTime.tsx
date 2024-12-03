@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React from 'react'
+import { SERVER_URI } from '../constants/config';
 
 type Props = {}
 
@@ -29,7 +30,7 @@ function PredictTime({ }: Props) {
 
     const handleEstimation = async () => {
         try {
-            const resp = await axios.post("http://localhost:8000/predict", {
+            const resp = await axios.post(`${SERVER_URI}/predict`, {
                 "Type of clothing": item,
                 "Production line number": lines,
                 "Number of employees": employees,
@@ -39,7 +40,7 @@ function PredictTime({ }: Props) {
 
             console.log(resp.data);
 
-            setEstimatedTime(resp?.data?.time);
+            setEstimatedTime(resp?.data['Predicted Man Hours']);
         } catch (error: any) {
             console.log(error);
             setError(error?.response?.data?.error);
