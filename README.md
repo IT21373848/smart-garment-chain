@@ -5,6 +5,12 @@ It leverages **data-driven insights** to help stakeholders make informed decisio
 
 ---
 
+## 🛠️ Architectural diagram
+
+![Architecture](https://github.com/user-attachments/assets/c8ff810a-1edd-4032-be3a-93059b3fc86f)
+
+---
+
 ## 🛠️ Getting Started
 
 Follow the steps below to set up and run the project on your local environment.
