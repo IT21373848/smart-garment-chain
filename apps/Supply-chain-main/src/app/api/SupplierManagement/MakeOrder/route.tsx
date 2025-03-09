@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const isSupplierExist = await Suppliers.findOne({ Supplier_Id });
+        const isSupplierExist = await Suppliers.findOne({ _id:Supplier_Id });
         if (!isSupplierExist) {
             return NextResponse.json(
               { message: "Supplier does not exist" },
