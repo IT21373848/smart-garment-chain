@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db"
 import Orders from "@/models/Orders";
+import Suppliers from "@/models/Suppliers";
 
 
 export async function POST(request: NextRequest) {
@@ -20,6 +21,14 @@ export async function POST(request: NextRequest) {
         if (!Supplier_Id || !Item_Name || !Price || !Quantity || !Required_Date) {
             return NextResponse.json(
               { message: "Missing fields" },
+              { status: 400 }
+            );
+        }
+
+        const isSupplierExist = await Suppliers.findOne({ Supplier_Id });
+        if (!isSupplierExist) {
+            return NextResponse.json(
+              { message: "Supplier does not exist" },
               { status: 400 }
             );
         }
