@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  python-server:
+    build: ./backend/python-api
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/python-api:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  nextjs-app:
+    build: ./Supply-chain-main
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Supply-chain-main:/app
+    depends_on:
+      - python-server
