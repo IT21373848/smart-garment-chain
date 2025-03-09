@@ -7,7 +7,7 @@ const ItemSchema = new Schema({
     }
 });
 
-const SuppliersSchema = new Schema({
+const suppliersSchema = new Schema({
     Supplier_Name :{
         type: String,
         required: true
@@ -15,7 +15,7 @@ const SuppliersSchema = new Schema({
     items: [ItemSchema]
 });
 
-const Suppliers =
-  mongoose.models.Suppliers || mongoose.model("Suppliers", SuppliersSchema);
+const suppliers =
+  mongoose.models.suppliers || mongoose.model("suppliers", suppliersSchema);
 
-export default Suppliers;
+export default suppliers;

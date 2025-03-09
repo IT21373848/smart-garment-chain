@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const OrdersSchema = new Schema({
+const ordersSchema = new Schema({
     Supplier_Id :{
         type: String,
         required: true
@@ -23,7 +23,7 @@ const OrdersSchema = new Schema({
     }
 });
 
-const Orders =
-  mongoose.models.Orders || mongoose.model("Orders", OrdersSchema);
+const orders =
+  mongoose.models.orders || mongoose.model("orders", ordersSchema);
 
-export default Orders;
+export default orders;
