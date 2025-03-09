@@ -1,14 +1,18 @@
 import mongoose, { Schema } from "mongoose";
 
-const SuppliersSchema = new Schema({
-    Supplier_Id :{
-        type: String,
-        required: true
-    },
-    Supplier_Name :{
+const ItemSchema = new Schema({
+    itemName: {
         type: String,
         required: true
     }
+});
+
+const SuppliersSchema = new Schema({
+    Supplier_Name :{
+        type: String,
+        required: true
+    },
+    items: [ItemSchema]
 });
 
 const Suppliers =
