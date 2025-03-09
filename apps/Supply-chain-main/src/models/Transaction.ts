@@ -5,7 +5,7 @@ const transactionSchema = new Schema({
         type: String,
         required: true
     },
-    Quality :{
+    Quantity :{
         type: String,
         required: true
     },
