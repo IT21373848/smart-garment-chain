@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const isOrderExist = await Transaction.findOne({ Order_Id });
+        if (!isOrderExist) {
+            return NextResponse.json(
+              { message: "Order does not exist" },
+              { status: 400 }
+            );
+        }
+        
         await Transaction.create({
             Order_Id,
             Quality,
