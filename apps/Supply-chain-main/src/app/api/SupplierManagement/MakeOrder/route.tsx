@@ -42,13 +42,13 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json(
-            { message: "Transaction saved successfully" },{ status: 200 }
+            { message: "Order saved successfully" },{ status: 200 }
         );
 
     }catch(error){
         console.error(error);
     return NextResponse.json(
-      { message: "Error saving Transaction" },
+      { message: "Error saving Order" },
       { status: 500 }
     );
     }
