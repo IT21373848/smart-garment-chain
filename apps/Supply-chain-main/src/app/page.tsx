@@ -1,4 +1,3 @@
-import Footer from "@/components/footer/Footer";
 import Link from "next/link";
 
 export default function Home() {
@@ -8,7 +7,6 @@ export default function Home() {
         {/* SAMPLE CODE, USE SHADCN UI LIBRARY AND INSTALL ANY UI COMPONENT IF NEEDED */}
         <Link href="/login">Login</Link>
       </main>
-      <Footer />
     </div>
   );
 }
