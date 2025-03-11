@@ -5,10 +5,16 @@ import Orders from "@/models/Orders";
 import { checkItem } from "./processQualityItems";
 import {Interlining} from "./Items/Interlining"
 import { Cotton_Fabric } from "./Items/Cotton_Fabric";
+import { Buttons } from "./Items/Buttons";
+import { Elastic_Bands } from "./Items/Elastic_Bands";
+import { Polyester_Fabric } from "./Items/Polyester_Fabric";
+import { Sewing_Thread } from "./Items/Sewing Thread";
+import { Silk_Fabric } from "./Items/Silk_Fabric";
+import { Zippers } from "./Items/Zippers";
 
 export async function POST(request: NextRequest) {
     let body;
-    const qualityItems: IQuality[] = [new Interlining(), new Cotton_Fabric()];
+    const qualityItems: IQuality[] = [new Buttons(),new Cotton_Fabric(),new Elastic_Bands(),new Interlining(),new Polyester_Fabric(),new Sewing_Thread(),new Silk_Fabric(),new Zippers()];
     try{
         
         try {
