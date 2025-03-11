@@ -1,8 +1,7 @@
 export class Interlining implements IQuality {
 
-    PremiumThresHold = 1;
-    HighThresHold = 1;
-    StandardThresHold = 1;
+    PremiumThresHold = 66.67;
+    HighThresHold = 55.33;
 
     getItemName(): string {
       return "Interlining";
@@ -31,10 +30,8 @@ export class Interlining implements IQuality {
           label = 'Premium';
         } else if (score >= this.HighThresHold) {
           label = 'High';
-        } else if (score >= this.StandardThresHold) {
-          label = 'Standard';
         } else {
-          label = 'Low';
+          label = 'Standard';
         }
     
         return label;
