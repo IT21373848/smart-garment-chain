@@ -10,10 +10,6 @@ const SECRET = process.env.JWT_SECRET || 'SECRET'
 export async function login(email: string, password: string): Promise<{ token: string, message: string, status: 500 | 200 }> {
     try {
         const cookieStore = await cookies()
-        //must call dbConnect before using mongoose
-        console.log('Login called', email, password)
-        // await dbConnect()
-
         const isExist = await UserModel.findOne({ email: email })
 
         if (!isExist) {
@@ -61,8 +57,6 @@ export async function login(email: string, password: string): Promise<{ token: s
 
 export async function registerUser(name: string, email: string, password: string, role: string = "admin"): Promise<{ message: string, status: 500 | 200 }> {
     try {
-        // await dbConnect();
-
         const isExist = await UserModel.findOne({ email: email });
 
         if (isExist) {

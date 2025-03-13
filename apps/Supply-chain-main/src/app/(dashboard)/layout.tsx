@@ -21,7 +21,7 @@ export default function RootLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="">{children}</div>
+        <div className="p-2 md:p-5 bg-gray-100 h-full">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
