@@ -36,27 +36,27 @@ const data = {
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Production Scheduling",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
+          title: "Overview",
+          url: "./overview",
+        },
+        {
+          title: "Current",
+          url: "./current",
+        },
+        {
           title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          url: "./history",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Orders",
       url: "#",
       icon: Bot,
       items: [

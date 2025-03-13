@@ -16,7 +16,7 @@ export default function LoginForm() {
     startTransition(() => {
       login(username, password)?.then((data) => {
         if (data) {
-          router.push('/dashboard')
+          router.push('/overview')
         } else {
           setMessage(data || 'Login failed. Please try again.')
         }
