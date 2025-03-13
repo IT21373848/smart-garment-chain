@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link';
 import React from 'react';
 
 export default function Custom404() {
@@ -29,13 +30,13 @@ export default function Custom404() {
             <div className="truck__wheel-arch-trim truck__wheel-arch-trim--right"></div>
             <div className="truck-wheel">
               <div className="truck-wheel__rim">
-                <div style={{ "--index": 0 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 1 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 2 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 3 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 4 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 5 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 6 }as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 0 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 1 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 2 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 3 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 4 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 5 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 6 } as React.CSSProperties} className="truck-wheel__spoke"></div>
               </div>
             </div>
           </div>
@@ -46,13 +47,13 @@ export default function Custom404() {
             <div className="truck__wheel-arch-trim truck__wheel-arch-trim--right"></div>
             <div className="truck-wheel">
               <div className="truck-wheel__rim">
-                <div style={{ "--index": 0 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 1 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 2 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 3 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 4 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 5 }as React.CSSProperties} className="truck-wheel__spoke"></div>
-                <div style={{ "--index": 6 }as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 0 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 1 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 2 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 3 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 4 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 5 } as React.CSSProperties} className="truck-wheel__spoke"></div>
+                <div style={{ "--index": 6 } as React.CSSProperties} className="truck-wheel__spoke"></div>
               </div>
             </div>
           </div>
@@ -69,12 +70,12 @@ export default function Custom404() {
         <p className="mt-4 text-lg text-gray-600">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
-        <a
+        <Link
           href="/"
           className="mt-6 inline-block bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition"
         >
           Go back home
-        </a>
+        </Link>
       </div>
 
       {/* Truck CSS */}
