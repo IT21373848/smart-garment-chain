@@ -1,8 +1,7 @@
 import React from 'react'
 
-type Props = {}
 
-const CurrentPage = (props: Props) => {
+const CurrentPage = () => {
   return (
     <div>CurrentPage</div>
   )

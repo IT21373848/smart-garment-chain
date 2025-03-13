@@ -12,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-type Props = {}
 
 const counts = [
   {
@@ -108,7 +107,7 @@ const invoices = [
   },
 ]
 
-const Overview = (props: Props) => {
+const Overview = () => {
   return (
     <div>
       <h2 className='text-2xl font-bold mb-5'>Overview</h2>
