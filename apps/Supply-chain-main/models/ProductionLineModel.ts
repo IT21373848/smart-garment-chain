@@ -1,40 +1,31 @@
-// import dbConnect from "@/lib/db";
+// ProductionLineModel contains line number and employeeIds array and the status
+
 import { connectToMongoDB } from "@/lib/mongo";
 import mongoose, { Document, model, Schema } from "mongoose";
 
-export interface IOrder extends Document {
-    orderNo: string,
-    qty: number,
-    deadline: Date,
+export interface IProductionLine extends Document {
+    lineNo: number,
+    employeeIds: Schema.Types.ObjectId[],
     status: string,
-    productionLineNo: Schema.Types.ObjectId[],
     createdAt?: Date,
-    updatedAt?: Date
+    updatedAt?: Date,
 }
 
-const OrderSchema = new Schema<IOrder>(
+const ProdSchema = new Schema<IProductionLine>(
     {
-        orderNo: {
-            type: String,
-            required: true,
-        },
-        qty: {
+        lineNo: {
             type: Number,
             required: true,
         },
-        deadline: {
-            type: Date,
+        employeeIds: {
+            type: [Schema.ObjectId],
             required: true,
+            ref: "User",
         },
         status: {
             type: String,
             required: true,
             enum: ["Pending", "In Progress", "Completed"],
-        },
-        productionLineNo: {
-            type: [Schema.ObjectId],
-            required: true,
-            ref: "line",
         },
     },
     {
@@ -44,7 +35,7 @@ const OrderSchema = new Schema<IOrder>(
 
 
 // Ensure MongoDB connection is established before using the model
-async function initializeOrderModel(): Promise<void> {
+async function initializeProductionModel(): Promise<void> {
     try {
         await connectToMongoDB();
         console.log("MongoDB Model for Order is ready.");
@@ -55,6 +46,6 @@ async function initializeOrderModel(): Promise<void> {
 }
 
 // Optionally, call initializeBlockCountModel() when the application starts
-initializeOrderModel().catch(console.error);
+initializeProductionModel().catch(console.error);
 
-export const OrderModel = mongoose.models.order || model<IOrder>("order", OrderSchema);
+export const OrderModel = mongoose.models.line || model<IProductionLine>("line", ProdSchema);
