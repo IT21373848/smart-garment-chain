@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   python-server:
+    container_name: supplychain-python-server  # Custom container name
     build: ./backend/python-api
     ports:
       - "5000:5000"
@@ -11,6 +12,7 @@ services:
       - PYTHONUNBUFFERED=1
 
   nextjs-app:
+    container_name: supplychain-nextjs-app  # Custom container name
     build: ./Supply-chain-main
     ports:
       - "3000:3000"
