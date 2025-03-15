@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db"
+import {connectToMongoDB} from "@/lib/mongo"
 import Orders from "@/models/Orders";
 import Suppliers from "@/models/Suppliers";
 
@@ -15,17 +15,17 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             );
         }
-        const db = await dbConnect();
+        const db = await connectToMongoDB();
         
-        const { Supplier_Id,Item_Name,Price,Quantity,Required_Date} = body;
-        if (!Supplier_Id || !Item_Name || !Price || !Quantity || !Required_Date) {
+        const { Supplier_Name,Item_Name,Quantity,Required_Date} = body;
+        if (!Supplier_Name || !Item_Name || !Quantity || !Required_Date) {
             return NextResponse.json(
               { message: "Missing fields" },
               { status: 400 }
             );
         }
 
-        const isSupplierExist = await Suppliers.findOne({ _id:Supplier_Id });
+        const isSupplierExist = await Suppliers.findOne({ Supplier_Name:Supplier_Name });
         if (!isSupplierExist) {
             return NextResponse.json(
               { message: "Supplier does not exist" },
@@ -34,9 +34,8 @@ export async function POST(request: NextRequest) {
         }
 
         await Orders.create({
-            Supplier_Id,
+            Supplier_Id:isSupplierExist._id,
             Item_Name,
-            Price,
             Quantity,
             Required_Date
         });

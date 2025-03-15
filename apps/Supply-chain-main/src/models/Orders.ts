@@ -9,10 +9,6 @@ const ordersSchema = new Schema({
         type: String,
         required: true
     },
-    Price:{
-        type: Number,
-        required: true
-    },
     Quantity :{
         type: Number,
         required: true

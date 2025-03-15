@@ -9,6 +9,10 @@ const transactionSchema = new Schema({
         type: String,
         required: true
     },
+    Price:{
+        type: Number,
+        required: true
+    },
     Defect_Rates:{
         type: Number,
         required: true

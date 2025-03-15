@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/db"
+import {connectToMongoDB} from "@/lib/mongo"
 import Transactions from "@/models/Transaction";
 import Orders from "@/models/Orders";
 import { checkItem } from "./processQualityItems";
@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
             );
         }
         
-        const { Order_Id, Defect_Rates, Date_of_Receipt } = body;
-        if (!Order_Id || !Defect_Rates || !Date_of_Receipt) {
+        const { Order_Id, Defect_Rates,Price, Date_of_Receipt } = body;
+        if (!Order_Id || !Defect_Rates || !Price || !Date_of_Receipt) {
             return NextResponse.json(
               { message: "Missing fields" },
               { status: 400 }
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         }
         let Quality = "" ;
 
-        const db = await dbConnect();
+        const db = await connectToMongoDB();
     
         const isOrderExist = await Orders.findOne({ _id: Order_Id });
         if (!isOrderExist) {
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
         await Transactions.create({
             Order_Id,
             Quality,
+            Price,
             Defect_Rates,
             Date_of_Receipt
         });
