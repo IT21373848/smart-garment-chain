@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Specify your Node.js version
+          node-version: '20'  # Specify your Node.js version
 
       - name: Install dependencies (Next.js)
         working-directory: ./apps/Supply-chain-main  # Update to point to the Next.js app in the apps folder
@@ -64,7 +64,7 @@ jobs:
       - name: Set up Node.js for React Native
         uses: actions/setup-node@v2
         with:
-          node-version: '16'  # Use the Node.js version for your React Native setup
+          node-version: '20'  # Use the Node.js version for your React Native setup
 
       - name: Install dependencies (React Native / Expo)
         working-directory: ./apps/mobile-app  # Update to point to the React Native app in the apps folder
