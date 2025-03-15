@@ -3,7 +3,6 @@ name = "python-api"
 version = "0.1.0"
 description = ""
 authors = ["Sauni Weerasinghe <it21373848@my.sliit.lk>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -14,6 +13,7 @@ openpyxl = "^3.1.5"
 matplotlib = "^3.9.3"
 tensorflow = "^2.18.0"
 flask-cors = "^5.0.0"
+pymongo = "^4.11.2"
 
 
 [build-system]
