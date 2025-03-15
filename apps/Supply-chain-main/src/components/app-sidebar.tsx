@@ -4,8 +4,8 @@ import * as React from "react"
 import {
   BookOpen,
   Bot,
-  GalleryVerticalEnd,
   Settings2,
+  Container,
   SquareTerminal,
 } from "lucide-react"
 
@@ -29,8 +29,8 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
+      name: "Smart-Garment-Chain",
+      logo: Container,
       plan: "Enterprise",
     }
   ],
