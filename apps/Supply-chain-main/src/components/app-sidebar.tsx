@@ -56,21 +56,17 @@ const data = {
       ],
     },
     {
-      title: "Orders",
-      url: "#",
+      title: "supply management",
+      url: "/supplymanagement",
       icon: Bot,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Make Orders",
+          url: "./MakeOrders",
         },
         {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
+          title: "Make Transaction",
+          url: "./MakeTransaction",
         },
       ],
     },
