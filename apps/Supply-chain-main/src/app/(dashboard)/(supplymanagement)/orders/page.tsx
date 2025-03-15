@@ -53,7 +53,7 @@ function OrderDetailContent() {
 
   async function fetchItemDetails(itemName: string) {
     try {
-      const response = await fetch("http://localhost:3000/api/SupplierManagement/GetItems", {
+      const response = await fetch("/api/SupplierManagement/GetItems", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ Item_Name: itemName }),
