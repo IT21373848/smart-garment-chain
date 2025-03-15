@@ -19,14 +19,14 @@ jobs:
           node-version: '16'  # Specify your Node.js version
 
       - name: Install dependencies (Next.js)
-        working-directory: ./apps/supply-chain-main  # Update to point to the Next.js app in the apps folder
+        working-directory: ./apps/Supply-chain-main  # Update to point to the Next.js app in the apps folder
         run: npm install  # or yarn install if you're using Yarn
 
       - name: Build Next.js project
-        working-directory: ./apps/supply-chain-main
+        working-directory: ./apps/Supply-chain-main
         run: npm run build  # or yarn build
 
-  # Job for building the Python backend
+  # Job for building the Python backend using Poetry
   backend:
     runs-on: ubuntu-latest
     steps:
@@ -38,17 +38,21 @@ jobs:
         with:
           python-version: '3.8'  # Specify the Python version
 
-      - name: Install dependencies (Python)
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Install dependencies (Python - Poetry)
         working-directory: ./apps/backend/python-api  # Update to point to the Python backend in the apps folder
         run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
+          source $HOME/.poetry/env
+          poetry install  # Install dependencies using Poetry
 
       - name: Run Python tests
         working-directory: ./apps/backend/python-api
         run: |
-          source venv/bin/activate
+          source $HOME/.poetry/env
+          poetry run pytest  # Run tests using Poetry
 
   # Job for building the React Native mobile app
   mobile-app:
@@ -69,4 +73,4 @@ jobs:
       - name: Build and Test React Native app
         working-directory: ./apps/mobile-app
         run: |
-          npm run build
+          npm run build  # Or replace with your specific build command (e.g., expo build)
