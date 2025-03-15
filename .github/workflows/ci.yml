@@ -1,0 +1,78 @@
+name: Build and Test All Components on Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main  # Trigger the workflow for PRs to the 'main' branch
+
+jobs:
+  # Job for building the Next.js frontend
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Specify your Node.js version
+
+      - name: Install dependencies (Next.js)
+        working-directory: ./apps/supply-chain-main  # Update to point to the Next.js app in the apps folder
+        run: npm install  # or yarn install if you're using Yarn
+
+      - name: Build Next.js project
+        working-directory: ./apps/supply-chain-main
+        run: npm run build  # or yarn build
+
+      - name: Run Next.js tests
+        working-directory: ./apps/supply-chain-main
+        run: npm run test  # or yarn test
+
+  # Job for building the Python backend
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'  # Specify the Python version
+
+      - name: Install dependencies (Python)
+        working-directory: ./apps/backend/python-api  # Update to point to the Python backend in the apps folder
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run Python tests
+        working-directory: ./apps/backend/python-api
+        run: |
+          source venv/bin/activate
+          pytest  # or any other testing framework you use
+
+  # Job for building the React Native mobile app
+  mobile-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js for React Native
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'  # Use the Node.js version for your React Native setup
+
+      - name: Install dependencies (React Native / Expo)
+        working-directory: ./apps/mobile-app  # Update to point to the React Native app in the apps folder
+        run: npm install  # or yarn install
+
+      - name: Build and Test React Native app
+        working-directory: ./apps/mobile-app
+        run: |
+          npm run build  # Replace with the correct build command for your app
+          npm test  # Replace with your React Native test command
