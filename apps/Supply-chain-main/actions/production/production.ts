@@ -29,9 +29,9 @@ export async function getAllProductionLines(): Promise<{ status: number, message
     try {
         const productionLines = await ProductionLineModel.find().populate("employeeIds");
 
-        return { status: 200, message: "Production lines fetched successfully", data: productionLines }
+        return JSON.parse(JSON.stringify({ status: 200, message: "Production lines fetched successfully", data: productionLines }))
     } catch (error: any) {
         console.log(error)
-        return { status: 500, message: error.message || "Error fetching production lines" , data: []}
+        return { status: 500, message: error.message || "Error fetching production lines", data: [] }
     }
 }
