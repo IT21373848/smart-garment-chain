@@ -5,9 +5,9 @@ import os
 import joblib
 from services.rankSuppliers import rank_suppliers
 
-packingBluePrint = Blueprint('supplierSelection', __name__)
+supplierSelection = Blueprint('supplierSelection', __name__)
 
-@packingBluePrint.route('/supplier-prediction', methods=['POST'])
+@supplierSelection.route('/supplier-prediction', methods=['POST'])
 def handle_supplier_selection():
     try:
 
