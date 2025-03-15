@@ -46,12 +46,12 @@ const data = {
           url: "./overview",
         },
         {
-          title: "Current",
-          url: "./current",
+          title: "Production Lines",
+          url: "./productionlines",
         },
         {
-          title: "History",
-          url: "./history",
+          title: "New Productions",
+          url: "./newproduction",
         },
       ],
     },
