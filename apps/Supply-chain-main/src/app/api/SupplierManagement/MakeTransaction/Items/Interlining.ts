@@ -15,7 +15,7 @@ export class Interlining implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): {label: string } {
         const weight = Number(params.Weight);
         const adhesion = Number(params.Adhesion);
         const stability = Number(params.Stability);
@@ -34,7 +34,7 @@ export class Interlining implements IQuality {
           label = 'Standard';
         }
     
-        return label;
+        return {label};
     }
     
 }

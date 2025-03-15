@@ -17,7 +17,7 @@ export class Polyester_Fabric implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): {label: string } {
         const score = 0.35*params.Tensile + 0.25*(1-params.Pilling) + 0.20*params.Weight + 0.10*params.Wicking + 0.10*params.Color;
         let label = '';
         if (score >= this.PremiumThresHold) {
@@ -27,6 +27,6 @@ export class Polyester_Fabric implements IQuality {
         } else{
           label = 'Standard';
         }
-        return label;
+        return {label};
     }
 }

@@ -16,7 +16,7 @@ export class Zippers implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): {label: string } {
         const score = 0.40*params.Pull + 0.30*params.Cycle + 0.20*params.Smoothness + 0.10*params.Corrosion;
         let label = '';
         if (score >= this.PremiumThresHold) {
@@ -26,6 +26,6 @@ export class Zippers implements IQuality {
         } else{
           label = 'Standard';
         }
-        return label;
+        return {label};
     }
 }

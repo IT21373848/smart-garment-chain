@@ -16,7 +16,7 @@ export class Sewing_Thread implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): {label: string } {
         const score = 0.40*params.Tensile + 0.20*(1-params.Friction) + 0.20*params.Elongation + 0.20*params.Uniformity;
         let label = '';
         if (score >= this.PremiumThresHold) {
@@ -26,7 +26,7 @@ export class Sewing_Thread implements IQuality {
         } else{
           label = 'Standard';
         }
-        return label;
+        return {label};
     }
     
 }

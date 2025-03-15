@@ -16,7 +16,7 @@ export class Cotton_Fabric implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): {label: string } {
         const score = 0.40*params.Tensile + 0.10*params.Uniformity + 0.30*(1-params.Shrinkage) + 0.20*params.Color;
         let label = '';
         if (score >= this.PremiumThresHold) {
@@ -26,6 +26,6 @@ export class Cotton_Fabric implements IQuality {
         } else {
           label = 'Standard';
         } 
-        return label;
+        return {label};
     }
 }

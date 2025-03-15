@@ -16,7 +16,7 @@ export class Buttons implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): { label: string } {
         const score = 0.50*params.Strength + 0.20*params.Dimensional + 0.20*params.Connection + 0.10*params.Finish;
         let label = '';
         if (score >= this.PremiumThresHold) {
@@ -26,6 +26,6 @@ export class Buttons implements IQuality {
         } else {
           label = 'Standard';
         } 
-        return label;
+        return {label};
     }
 }

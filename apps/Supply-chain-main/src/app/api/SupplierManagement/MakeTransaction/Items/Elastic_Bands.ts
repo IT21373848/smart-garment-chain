@@ -15,7 +15,7 @@ export class Elastic_Bands implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): {label: string } {
         const score = 0.30*params.Stretch + 0.30*params.Recovery + 0.40*params.Fatigue;
         let label = '';
         if (score >= this.PremiumThresHold) {
@@ -25,6 +25,6 @@ export class Elastic_Bands implements IQuality {
         } else {
           label = 'Standard';
         } 
-        return label;
+        return {label};
     }
 }

@@ -16,7 +16,7 @@ export class Silk_Fabric implements IQuality {
       ];
     }
   
-    calculateQuality(params: { [key: string]: any }): { score: number; label: string } {
+    calculateQuality(params: { [key: string]: any }): {label: string } {
         const score = 0.30*params.Luster + 0.30*params.Tensile + 0.20*params.Drape + 0.20*params.Color_Wrinkle;
         let label = '';
         if (score >= this.PremiumThresHold) {
@@ -26,6 +26,6 @@ export class Silk_Fabric implements IQuality {
         } else{
           label = 'Standard';
         }
-        return label;
+        return {label};
     }
 }

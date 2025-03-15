@@ -14,7 +14,7 @@ export async function GET() {
     const qualityItems: IQuality[] = [new Buttons(),new Cotton_Fabric(),new Elastic_Bands(),new Interlining(),new Polyester_Fabric(),new Sewing_Thread(),new Silk_Fabric(),new Zippers()];
     try{
         
-        let itemList = ItemList(qualityItems)
+        const itemList = ItemList(qualityItems)
         return NextResponse.json(
             { data: itemList },{ status: 200 }
         );
@@ -49,14 +49,14 @@ export async function POST(request: NextRequest) {
               { status: 400 }
             );
         }
-        let itemList = ItemList(qualityItems)
+        const itemList = ItemList(qualityItems)
         if(!itemList.includes(Item_Name)){
             return NextResponse.json(
                 { message: "Item not found" },
                 { status: 500 }
             );
         }
-        let param = getParametersList(Item_Name,qualityItems);
+        const param = getParametersList(Item_Name,qualityItems);
 
         return NextResponse.json(
             { data: param },{ status: 200 }
