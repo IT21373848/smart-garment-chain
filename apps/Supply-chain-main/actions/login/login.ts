@@ -1,6 +1,6 @@
 'use server'
 //use server dapu files server files,but mewa frontend eke direct call krnna puluwan normal function wagema
-import { UserModel } from "../../models/User"
+import { IUser, UserModel } from "../../models/User"
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 import { sign as SignFunction } from 'jsonwebtoken'
@@ -83,6 +83,22 @@ export async function registerUser(name: string, email: string, password: string
             status: 500,
             message: error.message
         };
+    }
+}
+
+export async function getAllEmployees(): Promise<{ employees: IUser[], status: number }> {
+    try {
+        const employees = await UserModel.find({ role: 'employee' }).select('-password');
+
+        return JSON.parse(JSON.stringify({
+            employees,
+            status: 200
+        }))
+    } catch (error: any) {
+        return {
+            employees: [],
+            status: 500
+        }
     }
 }
 

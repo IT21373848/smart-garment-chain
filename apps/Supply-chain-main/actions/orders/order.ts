@@ -1,3 +1,4 @@
+'use server'
 import { IOrder, OrderModel } from "../../models/OrderModel";
 import { createOrderNumber } from "../../utils/functions";
 
