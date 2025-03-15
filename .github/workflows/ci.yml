@@ -7,7 +7,7 @@ on:
 
 jobs:
   # Job for building the Next.js frontend
-  frontend:
+  nextjs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -27,7 +27,7 @@ jobs:
         run: npm run build  # or yarn build
 
   # Job for building the Python backend using Poetry
-  backend:
+  python:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
