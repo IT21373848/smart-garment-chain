@@ -2,12 +2,13 @@ import joblib
 import numpy as np
 import pandas as pd
 # from sklearn.preprocessing import StandardScaler, LabelEncoder
-# import os
+import os
 from flask import request, jsonify
 
 # PREDICT MAN HOURS
 # Load the trained model
-model_path = './models/stacked_modelup-v4.joblib'
+current_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(current_dir,"models",'stacked_modelup-v4.joblib')
 stacked_model = joblib.load(model_path)
 def predict_man_hours():
     try:

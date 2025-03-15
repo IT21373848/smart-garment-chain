@@ -75,6 +75,7 @@ export default function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <span className='text-xs'>username: admin password: admin</span>
         </div>
         <Button
           onClick={view === 'login' ? loginHandler : registerHandler}
