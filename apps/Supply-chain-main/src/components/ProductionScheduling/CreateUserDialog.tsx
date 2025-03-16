@@ -7,6 +7,7 @@ import { Input } from '../ui/input'
 import { registerUser } from '../../../actions/login/login'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 
 const CreateUserDialog = () => {
@@ -25,12 +26,15 @@ const CreateUserDialog = () => {
             try {
                 if (newUser.name && newUser.email && newUser.password) {
                     const resp = await registerUser(newUser.name, newUser.email, newUser.password, 'employee')
+                    if(resp?.status !== 200) throw new Error(resp.message)
+                    toast.success('User created successfully')
                     router.refresh()
                 } else {
                     throw new Error('All fields are required')
                 }
             } catch (error: any) {
                 console.log(error)
+                toast.error(error.message)
             }
         })
     }

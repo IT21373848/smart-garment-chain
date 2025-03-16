@@ -8,12 +8,13 @@ import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 import { createProductionLine } from '../../../actions/production/production'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { toast } from 'sonner'
 
 
 
 const CreateProductionLineDialog = ({ employees }: { employees: IUser[] }) => {
-    const [newLine, setNewLine] = React.useState<{ lineNo: number, employeeIds: string[] }>({
-        lineNo: 0,
+    const [newLine, setNewLine] = React.useState<{ lineNo: string, employeeIds: string[] }>({
+        lineNo: '0',
         employeeIds: [],
     })
     const [isAdding, startLineAdding] = useTransition()
@@ -24,20 +25,24 @@ const CreateProductionLineDialog = ({ employees }: { employees: IUser[] }) => {
         startLineAdding(async () => {
             try {
                 if (newLine.lineNo && newLine.employeeIds) {
-                    //@ts-expect-error
+                    // @ts-expect-error: The typescript compiler is complaining about the type of the newLine.employeeIds array because it's being inferred as an array of strings, but we know that the array contains only valid employee ids. We can bypass this error with the @ts-expect-error directive because we know that the array contains the correct type of data.
                     const resp = await createProductionLine(newLine.lineNo, newLine.employeeIds)
+                    if (resp?.status !== 200) throw new Error(resp.message)
+                    toast.success('Line created successfully')
                     router.refresh()
                 } else {
                     throw new Error('All fields are required')
                 }
             } catch (error: any) {
                 console.log(error)
+                toast.error(error.message)
             }
         })
     }
 
     const removeEmployee = (id: string) => {
         setNewLine({ ...newLine, employeeIds: newLine.employeeIds.filter((empId) => empId !== id) })
+        toast.success('Employee removed successfully')
     }
     return (
         <Dialog>
@@ -45,13 +50,13 @@ const CreateProductionLineDialog = ({ employees }: { employees: IUser[] }) => {
             <DialogContent aria-describedby={"dialog-description"} className={`custom-inner-shadow backdrop-blur-lg gap-0`}>
                 <DialogDescription className='hidden'>{'Hidden Description'}</DialogDescription>
                 <DialogHeader>
-                    <DialogTitle className={'Add New Employee'}>
-                        {'Add New Employee'}
+                    <DialogTitle className={''}>
+                        {'Create New Line'}
                     </DialogTitle>
                 </DialogHeader>
                 <div className='my-5'>
                     <Label>Line No</Label>
-                    <Input className='' type="number" placeholder="Line Number" value={newLine.lineNo} onChange={(e) => setNewLine({ ...newLine, lineNo: parseInt(e?.target?.value || '0') })} />
+                    <Input className='' type="text" placeholder="Line Number" value={newLine.lineNo} onChange={(e) => setNewLine({ ...newLine, lineNo: (e?.target?.value || '') })} />
                 </div>
 
                 <Select

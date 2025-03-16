@@ -5,7 +5,9 @@ import mongoose, { Document, model, Schema } from "mongoose";
 export interface IOrder extends Document {
     orderNo: string,
     qty: number,
+    item: string,
     deadline: Date,
+    estimatedDeadline: Date,
     status: string,
     productionLineNo: Schema.Types.ObjectId[],
     createdAt?: Date,
@@ -18,11 +20,19 @@ const OrderSchema = new Schema<IOrder>(
             type: String,
             required: true,
         },
+        item: {
+            type: String,
+            required: true,
+        },
         qty: {
             type: Number,
             required: true,
         },
         deadline: {
+            type: Date,
+            // required: true,
+        },
+        estimatedDeadline: {
             type: Date,
             required: true,
         },
@@ -57,4 +67,4 @@ async function initializeOrderModel(): Promise<void> {
 // Optionally, call initializeBlockCountModel() when the application starts
 initializeOrderModel().catch(console.error);
 
-export const OrderModel = mongoose.models.order || model<IOrder>("order", OrderSchema);
+export const OrderModel = mongoose.models.production || model<IOrder>("production", OrderSchema);

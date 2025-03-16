@@ -3,7 +3,7 @@ import { connectToMongoDB } from "@/lib/mongo";
 import mongoose, { Document, model, Schema } from "mongoose";
 
 export interface IProdLine extends Document {
-   lineNo: number;
+   lineNo: string;
    employeeIds: Schema.Types.ObjectId[];
    status: string;
 }
@@ -11,7 +11,7 @@ export interface IProdLine extends Document {
 const IProdLineSchema = new Schema<IProdLine>(
     {
         lineNo: {
-            type: Number,
+            type: String,
             required: true,
         },
         employeeIds: {

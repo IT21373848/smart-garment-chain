@@ -11,6 +11,10 @@ import { Button } from '@/components/ui/button'
 import { PredictAnimation } from '@/components/Dashboard/AnimatingPredictChart'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { PieChartView } from '@/components/Dashboard/PieChart'
+import { toast } from 'sonner'
+import { createOrder } from '../../../../actions/orders/order'
+import { ObjectId } from 'mongoose'
+import { useRouter } from 'next/navigation'
 
 const History = () => {
   const [isPredicting, setIsPredicting] = React.useState<boolean>(false)
@@ -20,6 +24,10 @@ const History = () => {
   const [selectedLines, setSelectedLines] = React.useState<Partial<IProdLine[]>>([])
   const [predictedManHours, setPredictedManHours] = React.useState<number>(0)
   const [elapsedTime, setElapsedTime] = React.useState<number>(0)
+  const [startDate, setStartDate] = React.useState<Date>(new Date())
+  const [estimatedEndDate, setEstimatedEndDate] = React.useState<Date>(new Date())
+  const [isAdding, startAdding] = React.useTransition()
+  const router = useRouter()
 
   const getProdLines = async () => {
     const lines = await getAllProductionLines()
@@ -31,19 +39,33 @@ const History = () => {
   }, [])
 
   const predictManHours = async () => {
-    setIsPredicting(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    const employees = selectedLines?.reduce((acc, line) => acc + (line?.employeeIds?.length || 0), 0) || 0
-    const resp = await predict({
-      item: selectedItem,
-      lines: selectedLines?.length || 0,
-      emp: employees,
-      qty: quantity,
-      elapsed: elapsedTime
-    })
+    try {
+      if (!selectedItem || !quantity || !selectedLines) return
+      setIsPredicting(true)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const employees = selectedLines?.reduce((acc, line) => acc + (line?.employeeIds?.length || 0), 0) || 0
+      const resp = await predict({
+        item: selectedItem,
+        lines: selectedLines?.length || 0,
+        emp: employees,
+        qty: quantity,
+        elapsed: elapsedTime
+      })
 
-    setPredictedManHours(resp.manHours)
-    setIsPredicting(false)
+      if (resp.status !== 200) {
+        setIsPredicting(false)
+        throw new Error(resp.message)
+      }
+      console.log('Predicted Man Hours:', resp)
+      setPredictedManHours(resp.manHours)
+      const newEndDate = new Date(startDate.getTime() + (resp.manHours * 60 * 60 * 1000))
+      setEstimatedEndDate(newEndDate)
+      setIsPredicting(false)
+    } catch (error: any) {
+      console.log(error)
+      setIsPredicting(false)
+      toast.error(error.message)
+    }
   }
 
   useEffect(() => {
@@ -55,7 +77,7 @@ const History = () => {
     return () => clearTimeout(t)
   }, [selectedItem, quantity, selectedLines, elapsedTime])
 
-  const handleAddToSelectedLines = (lineNo: number) => {
+  const handleAddToSelectedLines = (lineNo: string) => {
     if (selectedLines.find((line) => line?.lineNo === lineNo)) return
     const line = productionLines?.find((line) => line?.lineNo === lineNo)
     if (line) {
@@ -63,11 +85,34 @@ const History = () => {
     }
   }
 
-  const handleRemoveFromSelectedLines = (lineNo: number) => {
+  const handleRemoveFromSelectedLines = (lineNo: string) => {
     setSelectedLines(selectedLines.filter((line) => line?.lineNo !== lineNo))
   }
 
-  const handleNewProduction = () => {}
+  const handleNewProduction = () => {
+    startAdding(async () => {
+      try {
+        const resp = await createOrder({
+          productionLineNo: selectedLines?.map((line) => line?._id as ObjectId) || [],
+          item: selectedItem,
+          qty: quantity,
+          deadline: new Date(estimatedEndDate.getTime() + 7 * 24 * 60 * 60 * 1000),
+          estimatedDeadline: estimatedEndDate,
+          status: 'In Progress'
+        })
+
+        if (resp.status !== 200) {
+          throw new Error(resp.message)
+        }
+
+        toast.success(resp.message)
+        router.refresh()
+      } catch (error: any) {
+        console.log(error)
+        toast.error(error.message)
+      }
+    })
+  }
 
   return (
     <div className='bg-white p-5 h-full rounded-xl '>
@@ -100,7 +145,7 @@ const History = () => {
           />
 
           <Label className='mt-5 mb-2'>Production Lines</Label>
-          <Select onValueChange={(value) => handleAddToSelectedLines(parseInt(value))}>
+          <Select onValueChange={(value) => handleAddToSelectedLines((value))}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a production line" />
             </SelectTrigger>
@@ -117,7 +162,7 @@ const History = () => {
           <div className='flex items-center gap-3 flex-wrap w-1/2'>
             {
               selectedLines?.map((line) => (
-                <Button onClick={() => handleRemoveFromSelectedLines(line?.lineNo || 0)} key={line?.lineNo} className='w-[180px]'>{line?.lineNo}</Button>
+                <Button onClick={() => handleRemoveFromSelectedLines(line?.lineNo || '0')} key={line?.lineNo} className='w-[180px]'>{line?.lineNo}</Button>
               ))
             }
           </div>
@@ -128,7 +173,7 @@ const History = () => {
           <CardContent className="pb-0">
             {isPredicting ? <PredictAnimation />
               : <>
-                <PieChartView />
+                <PieChartView total={predictedManHours} />
                 <CardFooter>
                   <div className='flex items-center justify-between w-full'>
                     <div className='flex items-center gap-2'>
@@ -141,12 +186,22 @@ const History = () => {
                     </div>
                   </div>
                 </CardFooter>
+                <CardFooter className='mt-10 pt-5 flex items-center justify-between'>
+                  <div>
+                    <Label>Production Start Date</Label>
+                    <span>{startDate?.toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <Label>Estimated Deadline</Label>
+                    <span>{estimatedEndDate?.toLocaleDateString()}</span>
+                  </div>
+                </CardFooter>
               </>
             }
           </CardContent>
         </Card>
       </div>
-      <Button className='mt-20' onClick={handleNewProduction}>Add New Production</Button>
+      <Button disabled={isAdding} className='mt-20 disabled:bg-black/50' onClick={handleNewProduction}>Add New Production</Button>
     </div>
   )
 }

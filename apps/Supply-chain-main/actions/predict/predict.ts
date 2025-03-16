@@ -26,7 +26,7 @@ export async function predict(predictInput: Predict) :Promise<{ status: number, 
         const data = await response.json()
 
         return {
-            status: response.status,
+            status: 200,
             message: data.message,
             manHours: data['Predicted Man Hours']
         }
