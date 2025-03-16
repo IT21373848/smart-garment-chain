@@ -12,6 +12,9 @@ import { PredictAnimation } from '@/components/Dashboard/AnimatingPredictChart'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { PieChartView } from '@/components/Dashboard/PieChart'
 import { toast } from 'sonner'
+import { createOrder } from '../../../../actions/orders/order'
+import { ObjectId } from 'mongoose'
+import { useRouter } from 'next/navigation'
 
 const History = () => {
   const [isPredicting, setIsPredicting] = React.useState<boolean>(false)
@@ -23,6 +26,8 @@ const History = () => {
   const [elapsedTime, setElapsedTime] = React.useState<number>(0)
   const [startDate, setStartDate] = React.useState<Date>(new Date())
   const [estimatedEndDate, setEstimatedEndDate] = React.useState<Date>(new Date())
+  const [isAdding, startAdding] = React.useTransition()
+  const router = useRouter()
 
   const getProdLines = async () => {
     const lines = await getAllProductionLines()
@@ -35,6 +40,7 @@ const History = () => {
 
   const predictManHours = async () => {
     try {
+      if (!selectedItem || !quantity || !selectedLines) return
       setIsPredicting(true)
       await new Promise((resolve) => setTimeout(resolve, 2000))
       const employees = selectedLines?.reduce((acc, line) => acc + (line?.employeeIds?.length || 0), 0) || 0
@@ -83,7 +89,30 @@ const History = () => {
     setSelectedLines(selectedLines.filter((line) => line?.lineNo !== lineNo))
   }
 
-  const handleNewProduction = () => { }
+  const handleNewProduction = () => {
+    startAdding(async () => {
+      try {
+        const resp = await createOrder({
+          productionLineNo: selectedLines?.map((line) => line?._id as ObjectId) || [],
+          item: selectedItem,
+          qty: quantity,
+          deadline: new Date(estimatedEndDate.getTime() + 7 * 24 * 60 * 60 * 1000),
+          estimatedDeadline: estimatedEndDate,
+          status: 'In Progress'
+        })
+
+        if (resp.status !== 200) {
+          throw new Error(resp.message)
+        }
+
+        toast.success(resp.message)
+        router.refresh()
+      } catch (error: any) {
+        console.log(error)
+        toast.error(error.message)
+      }
+    })
+  }
 
   return (
     <div className='bg-white p-5 h-full rounded-xl '>
@@ -144,7 +173,7 @@ const History = () => {
           <CardContent className="pb-0">
             {isPredicting ? <PredictAnimation />
               : <>
-                <PieChartView  total={predictedManHours} />
+                <PieChartView total={predictedManHours} />
                 <CardFooter>
                   <div className='flex items-center justify-between w-full'>
                     <div className='flex items-center gap-2'>
@@ -172,7 +201,7 @@ const History = () => {
           </CardContent>
         </Card>
       </div>
-      <Button className='mt-20' onClick={handleNewProduction}>Add New Production</Button>
+      <Button disabled={isAdding} className='mt-20 disabled:bg-black/50' onClick={handleNewProduction}>Add New Production</Button>
     </div>
   )
 }

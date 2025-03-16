@@ -11,24 +11,25 @@ export async function createOrder(order: Partial<IOrder>) {
         }
         const newOrder = await OrderModel.create(order);
 
-        return {
+        return JSON.parse(JSON.stringify({
             status: 200,
             message: "Order created successfully",
             data: newOrder
-        }
+        }))
     } catch (error: any) {
-        return {
+        return JSON.parse(JSON.stringify({
             status: 500,
             message: error.message || "Error creating order",
             data: error
-        }
+        }))
     }
 }
+
 
 export async function getAllOrders(page: number = 1, limit: number = 10) {
     try {
         const skip = (page - 1) * limit;
-        const orders = await OrderModel.find().skip(skip).limit(limit);
+        const orders = await OrderModel.find().populate('productionLineNo').skip(skip).limit(limit);
         const totalOrders = await OrderModel.countDocuments();
 
         return {

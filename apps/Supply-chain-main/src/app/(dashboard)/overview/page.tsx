@@ -11,42 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { getAllOrders } from '../../../../actions/orders/order'
+import { IOrder } from '../../../../models/OrderModel'
+import { getAllProductionLines } from '../../../../actions/production/production'
+import { getAllEmployees } from '../../../../actions/login/login'
 
-
-const counts = [
-  {
-    title: 'Active Orders',
-    count: 3,
-    icon: <FactoryIcon />
-  },
-  {
-    title: 'Due Orders',
-    count: 2,
-    icon: <FileWarning />
-  },
-  {
-    title: 'Active Production Lines',
-    count: 1,
-    icon: <LineChartIcon />
-  },
-  {
-    title: 'Today Employees',
-    count: 200,
-    icon: <PersonStanding />
-  },
-  {
-    title: 'Factory Health',
-    count: 70,
-    icon: <HeartPulse />,
-    isPercentage: true
-  },
-  {
-    title: 'Item Per Hour',
-    count: 70,
-    icon: <Clock />,
-  }
-
-]
 
 const invoices = [
   {
@@ -107,7 +76,47 @@ const invoices = [
   },
 ]
 
-const Overview = () => {
+const Overview = async () => {
+
+  const [orders, lines, employees] = await Promise.all([getAllOrders(), getAllProductionLines(), getAllEmployees()]);
+
+  console.log(lines);
+
+
+  const counts = [
+    {
+      title: 'Active Orders',
+      count: orders?.data?.orders?.length || 0,
+      icon: <FactoryIcon />
+    },
+    {
+      title: 'Due Orders',
+      count: 2,
+      icon: <FileWarning />
+    },
+    {
+      title: 'Active Production Lines',
+      count: lines.data?.length || 0,
+      icon: <LineChartIcon />
+    },
+    {
+      title: 'Today Employees',
+      count: employees.employees?.length || 0,
+      icon: <PersonStanding />
+    },
+    {
+      title: 'Factory Health',
+      count: 70,
+      icon: <HeartPulse />,
+      isPercentage: true
+    },
+    {
+      title: 'Item Per Hour',
+      count: 70,
+      icon: <Clock />,
+    }
+
+  ]
   return (
     <div>
       <h2 className='text-2xl font-bold mb-5'>Overview</h2>
@@ -130,18 +139,18 @@ const Overview = () => {
               <TableHead>Production Lines</TableHead>
               <TableHead className="text-right">Employees</TableHead>
               <TableHead className="text-right">QTY</TableHead>
-              <TableHead className="text-right">Items Per Hour</TableHead>
+              <TableHead className="text-right">Estimated Hours to complete</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow key={invoice.invoice}>
-                <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                <TableCell>{invoice.type}</TableCell>
-                <TableCell>{invoice.lins}</TableCell>
-                <TableCell className="text-right">{invoice.emp}</TableCell>
+            {orders?.data?.orders?.map((invoice: Partial<IOrder>) => (
+              <TableRow key={invoice?._id as string}>
+                <TableCell className="font-medium">{invoice.orderNo}</TableCell>
+                <TableCell>{invoice.item}</TableCell>
+                <TableCell>{invoice?.productionLineNo?.length}</TableCell>
+                <TableCell className="text-right">{invoice.productionLineNo?.reduce((total, line: any) => total + line?.employeeIds?.length, 0)}</TableCell>
                 <TableCell className="text-right">{invoice.qty}</TableCell>
-                <TableCell className="text-right">{invoice.iph}</TableCell>
+                <TableCell className="text-right">{10}</TableCell>
               </TableRow>
             ))}
           </TableBody>
