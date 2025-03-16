@@ -5,10 +5,10 @@ import { Truck, Factory, Package, Users, ArrowRight, CheckCircle2 } from "lucide
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col px-5">
       {/* Navigation */}
       <header className="border-b">
-        <div className="container flex items-center justify-between py-4">
+        <div className=" flex items-center justify-between py-4">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🧵</span>
             <span className="font-bold text-xl">Smart-Garment-Chain</span>
@@ -35,7 +35,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-muted/50 to-background">
-        <div className="container grid gap-8 md:grid-cols-2 md:gap-12 items-center">
+        <div className=" grid gap-8 md:grid-cols-2 md:gap-12 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
               Revolutionize Your <span className="text-primary">Garment Supply Chain</span>
@@ -70,7 +70,7 @@ export default function Home() {
 
       {/* Features Section */}
       <section id="features" className="py-20">
-        <div className="container">
+        <div className="">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">AI-Powered Supply Chain Solutions</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -128,7 +128,7 @@ export default function Home() {
 
       {/* Benefits Section */}
       <section id="benefits" className="py-20 bg-muted">
-        <div className="container">
+        <div className="">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-6">Transform Your Garment Business</h2>
@@ -179,7 +179,7 @@ export default function Home() {
 
       {/* Stats Section */}
       <section className="py-20">
-        <div className="container">
+        <div className="">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold text-primary mb-2">30%</div>
@@ -203,7 +203,7 @@ export default function Home() {
 
       {/* CTA Section */}
       <section id="contact" className="py-20 bg-primary text-primary-foreground">
-        <div className="container text-center">
+        <div className=" text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
             Ready to Optimize Your Garment Supply Chain?
           </h2>
@@ -229,7 +229,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t py-12">
-        <div className="container">
+        <div className="">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">

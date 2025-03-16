@@ -15,6 +15,7 @@ import { getAllOrders } from '../../../../actions/orders/order'
 import { IOrder } from '../../../../models/OrderModel'
 import { getAllProductionLines } from '../../../../actions/production/production'
 import { getAllEmployees } from '../../../../actions/login/login'
+import { convertToTimeRemaining } from '../../../../utils/functions'
 
 
 const invoices = [
@@ -80,7 +81,7 @@ const Overview = async () => {
 
   const [orders, lines, employees] = await Promise.all([getAllOrders(), getAllProductionLines(), getAllEmployees()]);
 
-  console.log(lines);
+  console.log(orders.data);
 
 
   const counts = [
@@ -139,26 +140,29 @@ const Overview = async () => {
               <TableHead>Production Lines</TableHead>
               <TableHead className="text-right">Employees</TableHead>
               <TableHead className="text-right">QTY</TableHead>
-              <TableHead className="text-right">Estimated Hours to complete</TableHead>
+              <TableHead className="text-right">Created At</TableHead>
+              <TableHead className="text-right">Production Ends in (Estimated)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders?.data?.orders?.map((invoice: Partial<IOrder>) => (
+            {orders?.data?.orders?.map((invoice: any) => (
               <TableRow key={invoice?._id as string}>
                 <TableCell className="font-medium">{invoice.orderNo}</TableCell>
                 <TableCell>{invoice.item}</TableCell>
                 <TableCell>{invoice?.productionLineNo?.length}</TableCell>
-                <TableCell className="text-right">{invoice.productionLineNo?.reduce((total, line: any) => total + line?.employeeIds?.length, 0)}</TableCell>
+                <TableCell className="text-right">{invoice.productionLineNo?.reduce((total: number, line: any) => total + line?.employeeIds?.length, 0)}</TableCell>
                 <TableCell className="text-right">{invoice.qty}</TableCell>
-                <TableCell className="text-right">{10}</TableCell>
+                <TableCell className="text-right">{new Date(invoice.createdAt).toDateString()}</TableCell>
+
+                <TableCell className="text-right">{convertToTimeRemaining(invoice?.estimatedHoursFromNow)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
           <TableFooter>
             <TableRow>
               <TableCell colSpan={3}>Total</TableCell>
-              <TableCell className="text-right">{invoices.reduce((total, invoice) => total + parseInt(invoice.emp), 0)}</TableCell>
-              <TableCell className="text-right">{invoices.reduce((total, invoice) => total + (invoice.qty), 0)}</TableCell>
+              <TableCell className="text-right">{orders?.data?.orders?.reduce((total: number, invoice: any) => total + (invoice?.productionLineNo?.reduce((total: number, line: any) => total + line?.employeeIds?.length, 0)), 0)}</TableCell>
+              <TableCell className="text-right">{orders?.data?.orders?.reduce((total: number, invoice: any) => total + invoice.qty, 0)}</TableCell>
             </TableRow>
           </TableFooter>
         </Table>

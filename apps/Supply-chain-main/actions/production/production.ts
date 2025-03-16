@@ -35,3 +35,24 @@ export async function getAllProductionLines(): Promise<{ status: number, message
         return { status: 500, message: error.message || "Error fetching production lines", data: [] }
     }
 }
+
+export async function updateProductionLine(_id: string, employeeIds: Schema.Types.ObjectId[], lineNo: string): Promise<{ status: number, message: string }> {
+    try {
+        const isExist = await ProductionLineModel.findById(_id);
+        if (!isExist) {
+            throw new Error("Production line does not exist")
+        }
+        employeeIds.forEach(async (id) => {
+            const isEx = await UserModel.findById(id);
+            if (!isEx) {
+                throw new Error("User does not exist")
+            }
+        })
+        await ProductionLineModel.findByIdAndUpdate(_id, { employeeIds, lineNo: lineNo });
+
+        return { status: 200, message: "Production line updated successfully" }
+    } catch (error: any) {
+        console.log(error)
+        return { status: 500, message: error.message || "Error updating production line" }
+    }
+}
