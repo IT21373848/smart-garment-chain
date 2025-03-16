@@ -25,9 +25,9 @@ const CreateProductionLineDialog = ({ employees }: { employees: IUser[] }) => {
         startLineAdding(async () => {
             try {
                 if (newLine.lineNo && newLine.employeeIds) {
-                    //@ts-expect-error
+                    // @ts-expect-error: The typescript compiler is complaining about the type of the newLine.employeeIds array because it's being inferred as an array of strings, but we know that the array contains only valid employee ids. We can bypass this error with the @ts-expect-error directive because we know that the array contains the correct type of data.
                     const resp = await createProductionLine(newLine.lineNo, newLine.employeeIds)
-                    if(resp?.status !== 200) throw new Error(resp.message)
+                    if (resp?.status !== 200) throw new Error(resp.message)
                     toast.success('Line created successfully')
                     router.refresh()
                 } else {
