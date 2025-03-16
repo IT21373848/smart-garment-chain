@@ -38,9 +38,9 @@ const CurrentPage = async () => {
   const allUsers = await getAllEmployees()
 
   const allProductionLines = await getAllProductionLines()
-  console.log('All users:', allUsers);
+  // console.log('All users:', allUsers);
 
-  console.log('All production lines:', allProductionLines);
+  // console.log('All production lines:', allProductionLines);
 
   return (
     <div>
