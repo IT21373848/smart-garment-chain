@@ -3,7 +3,7 @@ import { Schema } from "mongoose";
 import { ProductionLineModel } from "../../models/LineModel";
 import { UserModel } from "../../models/User";
 
-export async function createProductionLine(lineNo: number, employeeIds: Schema.Types.ObjectId[]): Promise<{ status: number, message: string }> {
+export async function createProductionLine(lineNo: string, employeeIds: Schema.Types.ObjectId[]): Promise<{ status: number, message: string }> {
     try {
         console.log(lineNo, employeeIds)
         const isExist = await ProductionLineModel.findOne({ lineNo });
@@ -16,7 +16,7 @@ export async function createProductionLine(lineNo: number, employeeIds: Schema.T
                 throw new Error("User does not exist")
             }
         })
-        const productionLine = await ProductionLineModel.create({ lineNo, employeeIds, status: "Pending" });
+        await ProductionLineModel.create({ lineNo, employeeIds, status: "Pending" });
 
         return { status: 200, message: "Production line created successfully" }
     } catch (error: any) {
