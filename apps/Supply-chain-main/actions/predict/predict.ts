@@ -12,7 +12,6 @@ const FLASK_API_URL = process.env.FLASK_SERVER as string
 
 export async function predict(predictInput: Predict) :Promise<{ status: number, message: string, manHours: number }> {
     try{
-        console.log(predictInput)
         const response = await fetch(`${FLASK_API_URL}/predict`, {
             method: 'POST',
             headers: {
@@ -25,8 +24,6 @@ export async function predict(predictInput: Predict) :Promise<{ status: number, 
             throw new Error("Failed to fetch data")
         }
         const data = await response.json()
-
-        console.log(data['Predicted Man Hours'])
 
         return {
             status: 200,
