@@ -43,7 +43,7 @@ RUN python3 -m venv venv && \
 COPY . .
 
 # Expose the port Flask runs on
-EXPOSE 5000
+EXPOSE 5001
 
 # Activate virtual environment and run the application
 CMD ["bash", "-c", "source venv/bin/activate && python3 app.py"]

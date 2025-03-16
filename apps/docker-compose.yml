@@ -5,7 +5,7 @@ services:
     container_name: supplychain-python-server  # Custom container name
     build: ./backend/python-api
     ports:
-      - "5000:5000"
+      - "5001:5001"
     volumes:
       - ./backend/python-api:/app
     environment:

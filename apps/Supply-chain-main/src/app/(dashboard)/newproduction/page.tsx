@@ -71,7 +71,7 @@ const History = () => {
     return () => clearTimeout(t)
   }, [selectedItem, quantity, selectedLines, elapsedTime])
 
-  const handleAddToSelectedLines = (lineNo: String) => {
+  const handleAddToSelectedLines = (lineNo: string) => {
     if (selectedLines.find((line) => line?.lineNo === lineNo)) return
     const line = productionLines?.find((line) => line?.lineNo === lineNo)
     if (line) {
