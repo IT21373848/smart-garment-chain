@@ -50,7 +50,7 @@ const History = () => {
         setIsPredicting(false)
         throw new Error(resp.message)
       }
-
+      console.log('Predicted Man Hours:', resp)
       setPredictedManHours(resp.manHours)
       const newEndDate = new Date(startDate.getTime() + (resp.manHours * 60 * 60 * 1000))
       setEstimatedEndDate(newEndDate)
@@ -144,7 +144,7 @@ const History = () => {
           <CardContent className="pb-0">
             {isPredicting ? <PredictAnimation />
               : <>
-                <PieChartView />
+                <PieChartView  total={predictedManHours} />
                 <CardFooter>
                   <div className='flex items-center justify-between w-full'>
                     <div className='flex items-center gap-2'>
