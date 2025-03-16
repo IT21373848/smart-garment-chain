@@ -15,11 +15,12 @@ import { toast } from 'sonner'
 import { createOrder } from '../../../../actions/orders/order'
 import { ObjectId } from 'mongoose'
 import { useRouter } from 'next/navigation'
+import { convertToTimeRemaining } from '../../../../utils/functions'
 
 const History = () => {
   const [isPredicting, setIsPredicting] = React.useState<boolean>(false)
   const [selectedItem, setSelectedItem] = React.useState<string>('')
-  const [quantity, setQuantity] = React.useState<number>(0)
+  const [quantity, setQuantity] = React.useState<number | null>(0)
   const [productionLines, setProductionLines] = React.useState<Partial<IProdLine[]>>()
   const [selectedLines, setSelectedLines] = React.useState<Partial<IProdLine[]>>([])
   const [predictedManHours, setPredictedManHours] = React.useState<number>(0)
@@ -40,7 +41,7 @@ const History = () => {
 
   const predictManHours = async () => {
     try {
-      if (!selectedItem || !quantity || !selectedLines) return
+      if (!selectedItem || !quantity || !selectedLines || selectedLines.length === 0) return
       setIsPredicting(true)
       await new Promise((resolve) => setTimeout(resolve, 2000))
       const employees = selectedLines?.reduce((acc, line) => acc + (line?.employeeIds?.length || 0), 0) || 0
@@ -57,7 +58,7 @@ const History = () => {
         throw new Error(resp.message)
       }
       console.log('Predicted Man Hours:', resp)
-      setPredictedManHours(resp.manHours)
+      setPredictedManHours(resp.manHours > 0 ? resp.manHours : 1)
       const newEndDate = new Date(startDate.getTime() + (resp.manHours * 60 * 60 * 1000))
       setEstimatedEndDate(newEndDate)
       setIsPredicting(false)
@@ -95,7 +96,7 @@ const History = () => {
         const resp = await createOrder({
           productionLineNo: selectedLines?.map((line) => line?._id as ObjectId) || [],
           item: selectedItem,
-          qty: quantity,
+          qty: quantity || 0,
           deadline: new Date(estimatedEndDate.getTime() + 7 * 24 * 60 * 60 * 1000),
           estimatedDeadline: estimatedEndDate,
           status: 'In Progress'
@@ -139,7 +140,7 @@ const History = () => {
           <Label className='mt-5 mb-2'>Quantity</Label>
           <Input
             type="number"
-            value={quantity}
+            value={quantity || ''}
             className=''
             onChange={(e) => setQuantity(parseInt(e.target.value))}
           />
@@ -171,14 +172,20 @@ const History = () => {
 
         <Card className='w-full'>
           <CardContent className="pb-0">
-            {isPredicting ? <PredictAnimation />
+            {isPredicting ? <>
+              <PredictAnimation />
+              <p className="text-lg font-bold">
+                Please wait AI Model Predicting.....
+              </p>
+            </>
               : <>
                 <PieChartView total={predictedManHours} />
                 <CardFooter>
                   <div className='flex items-center justify-between w-full'>
                     <div className='flex items-center gap-2'>
                       <Label>Man Hours</Label>
-                      <span>{predictedManHours}</span>
+                      <span>{predictedManHours} </span>
+                      <span className='text-xs'>({convertToTimeRemaining(predictedManHours)})</span>
                     </div>
                     <div className='flex items-center gap-2'>
                       <Label>Elapsed Time</Label>

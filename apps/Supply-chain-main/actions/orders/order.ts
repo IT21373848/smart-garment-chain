@@ -1,6 +1,7 @@
 'use server'
 import { IOrder, OrderModel } from "../../models/OrderModel";
 import { createOrderNumber } from "../../utils/functions";
+import { predict } from "../predict/predict";
 
 
 export async function createOrder(order: Partial<IOrder>) {
@@ -26,17 +27,37 @@ export async function createOrder(order: Partial<IOrder>) {
 }
 
 
-export async function getAllOrders(page: number = 1, limit: number = 10) {
+export async function getAllOrders(page: number = 1, limit: number = 10):Promise<{ status: number, message: string, data: any }> {
+    const today = new Date();
     try {
         const skip = (page - 1) * limit;
         const orders = await OrderModel.find().populate('productionLineNo').skip(skip).limit(limit);
+
+        console.log('Orders:', orders);
+
+        const predictedHours = await Promise.all(orders.map(async (order) => {
+            const elapsedHours = (today.getTime() - order.createdAt.getTime()) / (1000 * 60 * 60);
+
+            const resp = await predict({
+                elapsed: elapsedHours,
+                emp: order?.productionLineNo?.reduce((acc : number, line: any) => acc + (line?.employeeIds?.length || 0), 0) || 0,
+                item: order.item,
+                lines: order.productionLineNo?.length,
+                qty: order.qty
+            })
+
+            return {
+                ...order?._doc,
+                estimatedHoursFromNow: resp.manHours
+            }
+        }))
         const totalOrders = await OrderModel.countDocuments();
 
         return {
             status: 200,
             message: "Orders retrieved successfully",
             data: {
-                orders,
+                orders: predictedHours,
                 totalPages: Math.ceil(totalOrders / limit),
                 currentPage: page
             }

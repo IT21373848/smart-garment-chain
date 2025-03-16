@@ -1,10 +1,10 @@
 import React from 'react'
 import { getAllEmployees } from '../../../../actions/login/login'
-import { Table, TableCaption, TableHeader } from '@/components/ui/table'
 import { CustomTable, TableHeaderType } from '@/components/Dashboard/CustomTable'
 import { getAllProductionLines } from '../../../../actions/production/production'
 import CreateUserDialog from '@/components/ProductionScheduling/CreateUserDialog'
 import CreateProductionLineDialog from '@/components/ProductionScheduling/CreateProductionLine'
+import UpdateProductionLineDialog from '@/components/ProductionScheduling/UpdateLine'
 
 const userTableHeaders: TableHeaderType[] = [
   {
@@ -21,26 +21,32 @@ const userTableHeaders: TableHeaderType[] = [
   },
 ]
 
-const ProductionLineHeaders: TableHeaderType[] = [
-  {
-    title: 'Line No',
-    key: 'lineNo',
-  },
-  {
-    title: 'Employee Count',
-    key: 'employeeIds',
-    render: (value: any) => value.length
-  },
-]
+
 
 const CurrentPage = async () => {
 
   const allUsers = await getAllEmployees()
 
   const allProductionLines = await getAllProductionLines()
-  // console.log('All users:', allUsers);
 
   // console.log('All production lines:', allProductionLines);
+
+  const ProductionLineHeaders: TableHeaderType[] = [
+    {
+      title: 'Line No',
+      key: 'lineNo',
+    },
+    {
+      title: 'Employee Count',
+      key: 'employeeIds',
+      render: (value: any) => value.length
+    },
+    {
+      title: 'Action',
+      key: '_id',
+      render: (value: any) => <UpdateProductionLineDialog key={Math.random()} employees={allUsers.employees} line={allProductionLines.data.find((line: any) => line._id === value)} />
+    }
+  ]
 
   return (
     <div>
