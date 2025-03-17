@@ -7,10 +7,12 @@ WORKDIR /app
 # Copy package.json and install dependencies
 COPY package.json yarn.lock ./
 
+RUN cat package.json
+
 #install yarn
 # RUN npm install -g yarn
 
-RUN yarn install
+RUN yarn install --no-cache
 
 # Copy the rest of the application
 COPY . .
