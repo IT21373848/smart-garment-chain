@@ -1,0 +1,56 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Change to your deployment branch if needed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 18.208.151.144
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Switch to home directory
+            cd ~
+            
+            # Install Docker & Git if not installed
+            if ! command -v docker &> /dev/null; then
+              sudo yum update -y
+              sudo yum install -y docker git
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker ec2-user
+            fi
+
+            # Install Docker Compose (Amazon Linux)
+            if ! command -v docker-compose &> /dev/null; then
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
+            # Clone the repository if not exists
+            if [ ! -d "supplychain-app" ]; then
+              git clone https://github.com/IT21373848/smart-garment-chain.git supplychain-app
+            fi
+
+            # Navigate to the project folder
+            cd smart-garment-chain
+            
+            # Pull the latest code
+            git pull origin main
+            
+            # Stop running containers
+            docker-compose down
+            
+            # Start fresh containers
+            docker-compose up --build -d
