@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { OPEN_WEATHER_API_KEY } from '@/utils/constants';
+export const OPEN_WEATHER_API_KEY = process.env.OPEN_WEATHER_API_KEY!;
 import { Coordinate } from '@/types';
 
 // Define types for OpenWeather API Response (minimal)

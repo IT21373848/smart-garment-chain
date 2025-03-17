@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MODEL_API_ENDPOINT } from '@/utils/constants';
+export const MODEL_API_ENDPOINT = process.env.MODEL_API_ENDPOINT!;
 import { Delivery } from '@/types';
 
 // Define the expected response from your AI model

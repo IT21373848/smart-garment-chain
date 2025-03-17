@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Coordinate, Destination } from '@/types';
-import { OPENROUTESERVICE_API_KEY } from '@/utils/constants';
+const OPENROUTESERVICE_API_KEY = process.env.OPENROUTESERVICE_API_KEY!;
 
 export const calculateRouteDistance = async (start: Coordinate, destination: Coordinate): Promise<number> => {
   const url = "https://api.openrouteservice.org/v2/matrix/driving-car";
