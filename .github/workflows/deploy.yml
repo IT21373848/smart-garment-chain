@@ -44,7 +44,10 @@ jobs:
             fi
 
             # Navigate to the project folder
-            cd smart-garment-chain
+            cd supplychain-app
+
+            # change dir to apps
+            cd apps
             
             # Pull the latest code
             git pull origin main
