@@ -31,7 +31,7 @@ FROM python:3.12
 WORKDIR /app
 
 # Copy only requirements file first (for better caching)
-COPY requirements.txt .
+COPY src/requirements.txt .
 
 # Create a virtual environment
 RUN python3 -m venv venv && \
