@@ -1,7 +1,11 @@
 import joblib
+import os
 from data.vehicles import vehicles
 
-model = joblib.load('./model/vehicle_selector_model.pkl')
+# model = joblib.load('./model/vehicle_selector_model.pkl')
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "model", "vehicle_selector_model.pkl")
 
 vehicle_costs_per_km = {v['name']: v['cost_per_km'] for v in vehicles}
 
