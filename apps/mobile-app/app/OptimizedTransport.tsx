@@ -93,7 +93,6 @@ function isIndividualTransportData(data: any): data is IndividualTransportData {
 const OptimizedTransport: React.FC<Props> = (props) => {
     const params = useLocalSearchParams();
     let transportData: any = undefined;
-    console.log('params', params);
 
     if (props.transportData) {
         transportData = props.transportData;
@@ -106,7 +105,6 @@ const OptimizedTransport: React.FC<Props> = (props) => {
             console.error("Failed to parse transportData from params:", e);
         }
     }
-    console.log(transportData.groupedRoutes)
 
     if (!transportData) {
         return (
