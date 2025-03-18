@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # Change to your deployment branch if needed
+      - main # Change to your deployment branch if needed
 
 jobs:
   deploy:
@@ -16,13 +16,13 @@ jobs:
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 18.208.151.144
+          host: 54.167.158.6
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # Switch to home directory
             cd ~
-            
+
             # Install Docker & Git if not installed
             if ! command -v docker &> /dev/null; then
               sudo yum update -y
@@ -48,12 +48,27 @@ jobs:
 
             # change dir to apps
             cd apps
-            
+
             # Pull the latest code
             git pull origin main
-            
-            # Stop running containers
-            docker-compose down
-            
-            # Start fresh containers
-            docker-compose up --build -d
+
+            #change dir to  Supply-chain-main
+            cd Supply-chain-main
+
+            # yarn install
+            yarn
+
+            # Build the Next.js application
+            yarn build
+
+            # Run the Next.js application
+            yarn start
+
+            #change the dir ../backend/python-api
+            cd ../backend/python-api
+
+            #pip install
+            pip install -r requirements.txt
+
+            # Run the Python API
+            python src/app.py
