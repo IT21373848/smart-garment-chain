@@ -70,5 +70,5 @@ jobs:
             # pip install
             pip install -r src/requirements.txt
 
-            # Run the Python API
-            python src/app.py
+            # Run the Python API using nohup
+            nohup python3 src/app.py
