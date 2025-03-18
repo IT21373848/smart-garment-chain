@@ -68,7 +68,7 @@ jobs:
             cd ../backend/python-api
 
             # pip install
-            pip install -r requirements.txt
+            pip install -r src/requirements.txt
 
             # Run the Python API
             python src/app.py
