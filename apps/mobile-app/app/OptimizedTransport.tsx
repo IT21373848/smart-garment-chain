@@ -51,7 +51,7 @@ type VehicleData = {
 };
 
 type Route = {
-    totalDistanceKm: number;
+    total_distance_km: number;
     routeLink: string;
 };
 
@@ -106,6 +106,7 @@ const OptimizedTransport: React.FC<Props> = (props) => {
             console.error("Failed to parse transportData from params:", e);
         }
     }
+    console.log(transportData.groupedRoutes)
 
     if (!transportData) {
         return (
@@ -155,7 +156,7 @@ const OptimizedTransport: React.FC<Props> = (props) => {
                                 <Text style={styles.dataLabel}>Vehicles:</Text>
                                 <FlatList
                                     data={vehicles}
-                                    renderItem={({ item, index }) => <Text style={styles.dataValue}>{index+1}. {item}</Text>}
+                                    renderItem={({ item, index }) => <Text style={styles.dataValue}>{index + 1}. {item}</Text>}
                                     keyExtractor={(item, index) => index.toString()}
                                 />
                             </View>
@@ -273,11 +274,27 @@ const OptimizedTransport: React.FC<Props> = (props) => {
                             </View>
                             <View style={styles.dataRow}>
                                 <Text style={styles.dataLabel}>Total Distance:</Text>
-                                <Text style={styles.dataValue}>{group.route.totalDistanceKm.toFixed(2)} km</Text>
+                                <Text style={styles.dataValue}>
+                                    {group.vehicles?.total_distance_km !== undefined ? `${group.vehicles.total_distance_km.toFixed(2)} km` : 'N/A'}
+                                </Text>
                             </View>
                             <View style={styles.dataRow}>
                                 <Text style={styles.dataLabel}>Estimated Cost:</Text>
                                 <Text style={styles.dataValue}>LKR {group.vehicles.total_estimated_cost_LKR.toLocaleString()}</Text>
+                            </View>
+                            <View style={styles.dataRow}>
+                                <Text style={styles.dataLabel}>Vehicles Needed:</Text>
+                            </View>
+                            <View style={styles.dataRow}>
+                                <FlatList
+                                    data={group.vehicles.vehicles}
+                                    renderItem={({ item, index }) => (
+                                        <View style={styles.dataRow}>
+                                            <Text style={styles.dataValue}>{index + 1}. {item}</Text>
+                                        </View>
+                                    )}
+                                    keyExtractor={(item, index) => index.toString()}
+                                />
                             </View>
                         </View>
 
