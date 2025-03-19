@@ -37,9 +37,9 @@ export async function getAllOrders(page: number = 1, limit: number = 10):Promise
 
         const predictedHours = await Promise.all(orders.map(async (order) => {
             const elapsedHours = (today.getTime() - order.createdAt.getTime()) / (1000 * 60 * 60);
-
+            console.log('Elapsed hours:', elapsedHours);
             const resp = await predict({
-                elapsed: elapsedHours,
+                elapsed: 0,
                 emp: order?.productionLineNo?.reduce((acc : number, line: any) => acc + (line?.employeeIds?.length || 0), 0) || 0,
                 item: order.item,
                 lines: order.productionLineNo?.length,
@@ -48,7 +48,7 @@ export async function getAllOrders(page: number = 1, limit: number = 10):Promise
 
             return {
                 ...order?._doc,
-                estimatedHoursFromNow: resp.manHours
+                estimatedHoursFromNow: resp.manHours - elapsedHours
             }
         }))
         const totalOrders = await OrderModel.countDocuments();
