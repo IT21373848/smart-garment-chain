@@ -64,11 +64,17 @@ jobs:
             # Run the Next.js application using nohup
             nohup yarn start > nextjs.log 2>&1 &
 
+              # Kill any process using port 5001
+            if lsof -i :5001 -t >/dev/null; then
+              sudo kill -9 $(lsof -i :5001 -t)
+            fi
+
             # Change the dir to ../backend/python-api
             cd ../backend/python-api
 
             # pip install
             pip install -r src/requirements.txt
+            
 
             # Run the Python API using nohup
             nohup python3 src/app.py
