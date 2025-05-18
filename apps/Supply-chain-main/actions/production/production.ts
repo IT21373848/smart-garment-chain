@@ -10,12 +10,29 @@ export async function createProductionLine(lineNo: string, employeeIds: Schema.T
         if (isExist) {
             throw new Error("Production line already exists")
         }
-        employeeIds.forEach(async (id) => {
-            const isEx = await UserModel.findById(id);
-            if (!isEx) {
-                throw new Error("User does not exist")
-            }
+        // Validate all employees exist
+        const users = await UserModel.find({ _id: { $in: employeeIds } });
+        if (users.length !== employeeIds.length) {
+            throw new Error("One or more employees do not exist");
+        }
+
+        // Check if any employee is already in a production line
+        const assignedLines = await ProductionLineModel.find({
+            employeeIds: { $in: employeeIds }
+        });
+
+        assignedLines?.forEach((line) => {
+            line.employeeIds?.forEach((id: any) => {
+                const user = users.find((user) => user._id.toString() === id.toString());
+                if (user) {
+                    throw new Error(`${user.name} is already in a production line with line number ${line.lineNo}`);
+                }
+            })
         })
+
+        if (assignedLines.length > 0) {
+            throw new Error("One or more employees are already in a production line");
+        }
         await ProductionLineModel.create({ lineNo, employeeIds, status: "Pending" });
 
         return { status: 200, message: "Production line created successfully" }
@@ -42,12 +59,28 @@ export async function updateProductionLine(_id: string, employeeIds: Schema.Type
         if (!isExist) {
             throw new Error("Production line does not exist")
         }
-        employeeIds.forEach(async (id) => {
-            const isEx = await UserModel.findById(id);
-            if (!isEx) {
-                throw new Error("User does not exist")
-            }
+
+        const users = await UserModel.find({ _id: { $in: employeeIds } });
+
+        if (users.length !== employeeIds.length) {
+            throw new Error("One or more employees do not exist");
+        }
+
+        // Check if any employee is already in a production line
+        const assignedLines = await ProductionLineModel.find({
+            employeeIds: { $in: employeeIds }
+        });
+
+        assignedLines?.forEach((line) => {
+            if (line?._id.toString() === isExist._id.toString()) return
+            line.employeeIds?.forEach((id: any) => {
+                const user = users.find((user) => user._id.toString() === id.toString());
+                if (user) {
+                    throw new Error(`${user.name} is already in a production line with line number ${line.lineNo}`);
+                }
+            })
         })
+
         await ProductionLineModel.findByIdAndUpdate(_id, { employeeIds, lineNo: lineNo });
 
         return { status: 200, message: "Production line updated successfully" }
