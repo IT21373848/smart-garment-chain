@@ -16,6 +16,8 @@ import { IOrder } from '../../../../models/OrderModel'
 import { getAllProductionLines } from '../../../../actions/production/production'
 import { getAllEmployees } from '../../../../actions/login/login'
 import { convertToTimeRemaining } from '../../../../utils/functions'
+import { isOrderDue } from '@/utils/helper'
+import { OrderModel } from '../../../../models/ProductionLineModel'
 
 
 const invoices = [
@@ -77,11 +79,23 @@ const invoices = [
   },
 ]
 
+
 const Overview = async () => {
+  const today = new Date()
+  let [orders, lines, employees] = await Promise.all([getAllOrders(), getAllProductionLines(), getAllEmployees()]);
 
-  const [orders, lines, employees] = await Promise.all([getAllOrders(), getAllProductionLines(), getAllEmployees()]);
+  // console.log(orders.data);
 
-  console.log(orders.data);
+  if (orders?.data?.orders?.length > 0) {
+
+    orders.data.orders = orders.data.orders.map((order: any) => {
+      const endDate = today.getTime() + order?.estimatedHoursFromNow  * 60 * 60 * 1000
+      return {
+        ...order,
+        isDue: isOrderDue(new Date(endDate), order?.deadline)
+      }
+    })
+  }
 
 
   const counts = [
@@ -92,7 +106,7 @@ const Overview = async () => {
     },
     {
       title: 'Due Orders',
-      count: 2,
+      count: orders?.data?.orders?.filter((order: any) => order?.isDue)?.length || 0,
       icon: <FileWarning />
     },
     {
@@ -101,7 +115,7 @@ const Overview = async () => {
       icon: <LineChartIcon />
     },
     {
-      title: 'Today Employees',
+      title: 'Employees',
       count: employees.employees?.length || 0,
       icon: <PersonStanding />
     },
@@ -141,19 +155,20 @@ const Overview = async () => {
               <TableHead className="text-right">Employees</TableHead>
               <TableHead className="text-right">QTY</TableHead>
               <TableHead className="text-right">Created At</TableHead>
+              <TableHead className="text-right">Actual Deadline</TableHead>
               <TableHead className="text-right">Production Ends in (Estimated)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {orders?.data?.orders?.map((invoice: any) => (
-              <TableRow key={invoice?._id as string}>
+              <TableRow key={invoice?._id as string} className={`${invoice.isDue ? "bg-red-100" : "bg-green-100"}`}>
                 <TableCell className="font-medium">{invoice.orderNo}</TableCell>
                 <TableCell>{invoice.item}</TableCell>
                 <TableCell>{invoice?.productionLineNo?.length}</TableCell>
                 <TableCell className="text-right">{invoice.productionLineNo?.reduce((total: number, line: any) => total + line?.employeeIds?.length, 0)}</TableCell>
                 <TableCell className="text-right">{invoice.qty}</TableCell>
                 <TableCell className="text-right">{new Date(invoice.createdAt).toDateString()}</TableCell>
-
+                <TableCell className="text-right">{new Date(invoice.deadline).toDateString()}</TableCell>
                 <TableCell className="text-right">{convertToTimeRemaining(invoice?.estimatedHoursFromNow)}</TableCell>
               </TableRow>
             ))}

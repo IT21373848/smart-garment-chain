@@ -56,7 +56,7 @@ const data = {
       ],
     },
     {
-      title: "supply management",
+      title: "Supply Management",
       url: "/supplymanagement",
       icon: Bot,
       items: [
