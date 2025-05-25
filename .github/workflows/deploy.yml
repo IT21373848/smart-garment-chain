@@ -55,39 +55,14 @@ jobs:
             python3 -m venv venv
             source venv/bin/activate
 
-            # Install Python dependencies with custom TMPDIR
-            mkdir -p ~/tmp_pip
-            TMPDIR=~/tmp_pip pip install --upgrade pip
-            TMPDIR=~/tmp_pip pip install gunicorn -r src/requirements.txt
+            # Install Python dependencies
+            pip install -r src/requirements.txt
             deactivate
 
-            # Create systemd service file
-            sudo bash -c 'cat > /etc/systemd/system/flask-api.service <<EOL
-            [Unit]
-            Description=Flask API with Gunicorn
-            After=network.target
-
-            [Service]
-            User=ec2-user
-            Group=ec2-user
-            WorkingDirectory=/home/ec2-user/supplychain-app/apps/backend/python-api
-            Environment="PATH=/home/ec2-user/supplychain-app/apps/backend/python-api/venv/bin:/usr/bin"
-            Environment="OPENAI_API_KEY=$OPENAI_API_KEY"
-            ExecStart=/home/ec2-user/supplychain-app/apps/backend/python-api/venv/bin/gunicorn \
-              --workers 4 \
-              --bind 0.0.0.0:5001 \
-              src.app:app
-            Restart=always
-            RestartSec=10s
-
-            [Install]
-            WantedBy=multi-user.target
-            EOL'
-
-            # Reload and start service
-            sudo systemctl daemon-reload
-            sudo systemctl enable flask-api
-            sudo systemctl restart flask-api
+            # Start Flask with PM2 (development server)
+            pm2 delete flask-dev || true
+            pm2 start venv/bin/python --name flask-dev -- src/app.py
+            pm2 save
 
             # ===== Next.js Setup =====
             cd ../../Supply-chain-main
