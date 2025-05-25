@@ -82,7 +82,7 @@ const invoices = [
 
 const Overview = async () => {
   const today = new Date()
-  let [orders, lines, employees] = await Promise.all([getAllOrders(), getAllProductionLines(), getAllEmployees()]);
+  const [orders, lines, employees] = await Promise.all([getAllOrders(), getAllProductionLines(), getAllEmployees()]);
 
   // console.log(orders.data);
 
