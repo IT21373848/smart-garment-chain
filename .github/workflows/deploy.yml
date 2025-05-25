@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
     steps:
       - name: Checkout Repository
@@ -22,7 +22,7 @@ jobs:
           host: 52.87.170.241
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: OPENAI_API_KEY
+          envs: GEMINI_API_KEY
           script: |
             # ----- Initial Setup -----
             cd ~
