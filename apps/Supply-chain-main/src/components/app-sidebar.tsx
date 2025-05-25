@@ -53,6 +53,10 @@ const data = {
           title: "New Productions",
           url: "./newproduction",
         },
+        {
+          title: 'Designs',
+          url: './designs'
+        }
       ],
     },
     {

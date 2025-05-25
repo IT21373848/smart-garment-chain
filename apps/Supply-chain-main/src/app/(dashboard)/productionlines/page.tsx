@@ -12,6 +12,10 @@ const userTableHeaders: TableHeaderType[] = [
     key: 'name',
   },
   {
+    title: "Employee ID",
+    key: "empId"
+  },
+  {
     title: 'Email',
     key: 'email',
   },
@@ -52,7 +56,7 @@ const CurrentPage = async () => {
     <div>
       <h2>All Production Lines</h2>
       <div className='w-max float-end'>
-        <CreateProductionLineDialog employees={allUsers.employees}/>
+        <CreateProductionLineDialog employees={allUsers.employees} />
       </div>
       <CustomTable data={allProductionLines.data} headers={ProductionLineHeaders} />
 

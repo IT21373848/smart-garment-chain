@@ -16,3 +16,18 @@ export const ORDER_STATUS = {
     InProgress: "In Progress",
     Completed: "Completed"
 }
+
+export const DESIGNS = [
+    {
+        id: 'StarCurved',
+        name: 'Star Curved',
+    },
+    {
+        id: 'IndianRed',
+        name: 'Indian Red',
+    },
+    {
+        id: 'Italian',
+        name: 'Italian',
+    }
+]
