@@ -1,8 +1,14 @@
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
 from services.packing.data import GARMENT_BOXES, CONTAINERS
 
-client = OpenAI(api_key="")
+load_dotenv()
+
+# Get the API key from environment variable
+api_key = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI(api_key=api_key)
 
 def generate_packing_plan(box_data, container_type):
     container = next((c for c in CONTAINERS if c['type'] == container_type), None)

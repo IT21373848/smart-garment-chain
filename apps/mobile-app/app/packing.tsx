@@ -10,8 +10,13 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  ScrollView,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet
 } from "react-native";
 import Container3D from "./Container3D";
+import { Ionicons } from "@expo/vector-icons";
 
 // Predefined container types
 const CONTAINERS = [
@@ -154,7 +159,7 @@ export default function PackingScreen() {
       alert("Please add at least one box type.");
       return;
     }
-    // setStep(2);
+    // setPageStep(2);
     startPacking();
   };
 
@@ -175,7 +180,7 @@ export default function PackingScreen() {
 
     try {
       const response = await fetch(
-        "http://172.28.6.189:3000/packing-prediction",
+        "http://127.0.0.1:5001/packing-prediction",
         {
           method: "POST",
           headers: {
@@ -203,387 +208,548 @@ export default function PackingScreen() {
   };
 
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: "#f5f5f5" }}>
-      {pageStep === 1 && (
-        // 📌 Step 1: Form UI
-        <View
-          style={{ backgroundColor: "#ffffff", padding: 20, borderRadius: 10 }}
-        >
-          <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}>
-            Packing Details
-          </Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
 
-          <Text style={{ fontSize: 16, marginBottom: 5 }}>Material ID:</Text>
-          <Picker
-            selectedValue={materialId}
-            onValueChange={(itemValue) => setMaterialId(itemValue)}
-            style={{
-              borderWidth: 1,
-              borderColor: "#ccc",
-              padding: 10,
-              marginBottom: 10,
-              backgroundColor: "#fff",
-            }}
-          >
-            <Picker.Item label="Select Material" value="" />
-            {GARMENT_BOXES.map((item) => (
-              <Picker.Item
-                key={item.material_id}
-                label={`${item.material} - ${item.size} (${item.material_id})`}
-                value={item.material_id}
-              />
-            ))}
-          </Picker>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Packing Management</Text>
+        <Text style={styles.headerSubtitle}>Optimize your packing strategy</Text>
+      </View>
 
-          <Text style={{ fontSize: 16, marginBottom: 5 }}>Quantity:</Text>
-          <TextInput
-            value={quantity}
-            onChangeText={(text) => {
-              // Ensure that the value is a valid positive number and not 0 or negative
-              if (text === "" || /^[1-9]\d*$/.test(text)) {
-                // RegEx allows only numbers greater than 0
-                setQuantity(text);
-              }
-            }}
-            placeholder="Enter quantity"
-            keyboardType="numeric"
-            style={{
-              borderWidth: 1,
-              borderColor: "#ccc",
-              padding: 10,
-              marginBottom: 10,
-              backgroundColor: "#fff",
-            }}
-          />
+      <ScrollView style={styles.content}>
+        {pageStep === 1 && (
+          // Step 1: Form UI
+          <View style={styles.formContainer}>
+            <Text style={styles.formTitle}>Packing Details</Text>
 
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 15,
-            }}
-          >
-            <Text style={{ fontSize: 16, marginRight: 10 }}>
-              Allow Rotation:
-            </Text>
-            <Switch value={allowRotation} onValueChange={setAllowRotation} />
-          </View>
-
-          <Button title="Add Box Type" onPress={addBoxType} color="#007BFF" />
-
-          <TouchableOpacity
-            onPress={() => setShowModal(true)}
-            style={{ marginTop: 15 }}
-          >
-            <Text style={{ fontSize: 18 }}>
-              Added Groups: {boxData.length}{" "}
-              {boxData.length > 0 && "(Click to view)"}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Modal to show added box types */}
-          <Modal
-            visible={showModal}
-            animationType="slide"
-            onRequestClose={() => setShowModal(false)}
-          >
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "rgba(0,0,0,0.5)",
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: "#fff",
-                  padding: 20,
-                  borderRadius: 10,
-                  width: "80%",
-                }}
-              >
-                <Text
-                  style={{ fontSize: 24, fontWeight: "bold", marginBottom: 10 }}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.inputLabel}>Material ID:</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={materialId}
+                  onValueChange={(itemValue) => setMaterialId(itemValue)}
+                  style={styles.picker}
+                  dropdownIconColor="#fff"
                 >
-                  Added Box Types
-                </Text>
-                {boxData.map((item, index) => (
-                  <Text key={index} style={{ fontSize: 18 }}>
-                    📦 {item.material_id} - {item.quantity} pcs (Rotation:{" "}
-                    {item.allow_rotation ? "Yes" : "No"})
-                  </Text>
-                ))}
-                <Button
-                  title="Close"
-                  onPress={() => setShowModal(false)}
-                  color="#FF6347"
+                  <Picker.Item label="Select Material" value="" color="#000" />
+                  {GARMENT_BOXES.map((item) => (
+                    <Picker.Item
+                      key={item.material_id}
+                      label={`${item.material} - ${item.size} (${item.material_id})`}
+                      value={item.material_id}
+                      color="#000"
+                    />
+                  ))}
+                </Picker>
+              </View>
+
+              <Text style={styles.inputLabel}>Quantity:</Text>
+              <TextInput
+                value={quantity}
+                onChangeText={(text) => {
+                  if (text === "" || /^[1-9]\d*$/.test(text)) {
+                    setQuantity(text);
+                  }
+                }}
+                placeholder="Enter quantity"
+                placeholderTextColor="#8a9bae"
+                keyboardType="numeric"
+                style={styles.input}
+              />
+
+              <View style={styles.switchContainer}>
+                <Text style={styles.switchLabel}>Allow Rotation:</Text>
+                <Switch 
+                  value={allowRotation} 
+                  onValueChange={setAllowRotation}
+                  trackColor={{ false: '#2c3e50', true: '#27ae60' }}
+                  thumbColor={allowRotation ? '#ffffff' : '#8a9bae'}
                 />
               </View>
-            </View>
-          </Modal>
 
-          <Text style={{ fontSize: 16, marginTop: 20, marginBottom: 5 }}>
-            Select Container:
-          </Text>
-          {CONTAINERS.map((container) => (
-            <TouchableOpacity
-              key={container.type}
-              style={{
-                padding: 10,
-                backgroundColor:
-                  selectedContainer === container.type ? "#007BFF" : "#ddd",
-                marginVertical: 5,
-                borderRadius: 5,
-              }}
-              onPress={() => setSelectedContainer(container.type)}
-            >
-              <Text
-                style={{
-                  color: selectedContainer === container.type ? "#fff" : "#000",
-                }}
-              >
-                {container.type}
-              </Text>
-            </TouchableOpacity>
-          ))}
-
-          <Button
-            title="Next"
-            onPress={handleSubmit}
-            color="#28A745"
-            style={{ marginTop: 20, marginBottom: 20 }}
-          />
-
-          <TouchableOpacity
-            onPress={resetForm}
-            style={{
-              backgroundColor: "#A9D6E5", // Light red color
-              paddingVertical: 10,
-              paddingHorizontal: 30,
-              borderRadius: 20, // Rounded corners
-              alignItems: "center",
-              marginTop: 15, // Adds some space from the Start Packing button
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "bold",
-              }}
-            >
-              Cancel
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {pageStep === 2 && (
-        // 📌 Step 2: Summary
-        <View style={{ flex: 1, padding: 20, backgroundColor: "#f5f5f5" }}>
-          <View
-            style={{
-              backgroundColor: "#ffffff",
-              padding: 20,
-              borderRadius: 15,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 5,
-              elevation: 5,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: "bold", 
-                marginBottom: 20,
-                color: "#333",
-              }}
-            >
-              Packing Summary
-            </Text>
-
-            {/* Box Data List */}
-            {boxData.map((item, index) => (
-              <View
-                key={index}
-                style={{
-                  marginBottom: 15,
-                  padding: 15,
-                  backgroundColor: "#f8f9fa",
-                  borderRadius: 10,
-                  borderLeftWidth: 5,
-                  borderLeftColor: "#007BFF",
-                }}
-              >
-                <Text
-                  style={{ fontSize: 18, fontWeight: "bold", color: "#333" }}
-                >
-                  📦 {item.material_id}
-                </Text>
-                <Text style={{ fontSize: 16, color: "#555" }}>
-                  Quantity: {item.quantity} pcs
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: item.allow_rotation ? "#28A745" : "#FF6347",
-                  }}
-                >
-                  Rotation: {item.allow_rotation ? "Allowed" : "Not Allowed"}
-                </Text>
-              </View>
-            ))}
-
-            {/* Container Selection */}
-            <View style={{ marginTop: 20 }}>
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  marginBottom: 10,
-                  color: "#333",
-                }}
-              >
-                Selected Container:
-              </Text>
-              <View
-                style={{
-                  padding: 10,
-                  backgroundColor: "#e9ecef",
-                  borderRadius: 8,
-                }}
-              >
-                <Text style={{ fontSize: 16, color: "#007BFF" }}>
-                  {selectedContainer}
-                </Text>
-              </View>
-            </View>
-
-            {/* Start Packing Button */}
-            <View
-              style={{ marginTop: 20, alignItems: "center", marginBottom: 20 }}
-            >
               <TouchableOpacity
-                onPress={() => setPageStep(3)}
-                style={{
-                  backgroundColor: "#28A745",
-                  paddingVertical: 15,
-                  paddingHorizontal: 40,
-                  borderRadius: 30,
-                  elevation: 5,
-                }}
+                onPress={addBoxType}
+                style={styles.addButton}
               >
-                <Text
-                  style={{ color: "#fff", fontSize: 18, fontWeight: "bold" }}
-                >
-                  Start Packing
+                <Ionicons name="add-circle" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Add Box Type</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setShowModal(true)}
+                style={styles.viewGroupsButton}
+              >
+                <Ionicons name="eye" size={20} color="#fff" />
+                <Text style={styles.buttonText}>
+                  Added Groups: {boxData.length} {boxData.length > 0 && "(Click to view)"}
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Cancel Button */}
+            {/* Modal */}
+            <Modal
+              visible={showModal}
+              animationType="slide"
+              onRequestClose={() => setShowModal(false)}
+            >
+              <SafeAreaView style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Added Box Types</Text>
+                  <ScrollView style={styles.modalList}>
+                    {boxData.map((item, index) => (
+                      <View key={index} style={styles.modalItem}>
+                        <Text style={styles.modalItemText}>
+                          📦 {item.material_id} - {item.quantity} pcs
+                        </Text>
+                        <Text style={styles.modalItemSubtext}>
+                          Rotation: {item.allow_rotation ? "Yes" : "No"}
+                        </Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                  <TouchableOpacity
+                    onPress={() => setShowModal(false)}
+                    style={styles.closeModalButton}
+                  >
+                    <Text style={styles.buttonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </SafeAreaView>
+            </Modal>
+
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Select Container:</Text>
+              {CONTAINERS.map((container) => (
+                <TouchableOpacity
+                  key={container.type}
+                  style={[
+                    styles.containerOption,
+                    selectedContainer === container.type && styles.containerOptionSelected
+                  ]}
+                  onPress={() => setSelectedContainer(container.type)}
+                >
+                  <Text style={[
+                    styles.containerOptionText,
+                    selectedContainer === container.type && styles.containerOptionTextSelected
+                  ]}>
+                    {container.type}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                onPress={handleSubmit}
+                style={styles.nextButton}
+              >
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Next</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={resetForm}
+                style={styles.cancelButton}
+              >
+                <Ionicons name="close" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {pageStep === 2 && (
+          // Step 2: Summary
+          <View style={styles.formContainer}>
+            <Text style={styles.formTitle}>Packing Summary</Text>
+
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Box Data</Text>
+              {boxData.map((item, index) => (
+                <View key={index} style={styles.summaryItem}>
+                  <View style={styles.summaryHeader}>
+                    <Text style={styles.summaryTitle}>📦 {item.material_id}</Text>
+                  </View>
+                  <Text style={styles.summaryText}>Quantity: {item.quantity} pcs</Text>
+                  <Text style={[
+                    styles.summaryText,
+                    { color: item.allow_rotation ? '#27ae60' : '#e74c3c' }
+                  ]}>
+                    Rotation: {item.allow_rotation ? "Allowed" : "Not Allowed"}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Selected Container</Text>
+              <View style={styles.containerSummary}>
+                <Text style={styles.containerSummaryText}>{selectedContainer}</Text>
+              </View>
+            </View>
+
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                onPress={() => setPageStep(3)}
+                style={styles.startPackingButton}
+              >
+                <Ionicons name="play" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Start Packing</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={resetForm}
+                style={styles.cancelButton}
+              >
+                <Ionicons name="close" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {pageStep === 3 && (
+          <View style={styles.formContainer}>
+            <Text style={styles.formTitle}>Step {currentStep + 1}</Text>
+
+            {instructions.length > 0 && instructions[currentStep] && (
+              <View style={styles.instructionContainer}>
+                <Text style={styles.instructionText}>
+                  {instructions[currentStep].steps[0].instruction}
+                </Text>
+
+                {/* Your 3D Container component would go here */}
+                {/* <Container3D instructions={instructions} currentStep={currentStep} /> */}
+                <View style={styles.placeholder3D}>
+                  <Ionicons name="cube" size={48} color="#8a9bae" />
+                  <Text style={styles.placeholderText}>3D Model View</Text>
+                </View>
+              </View>
+            )}
+
+            <View style={styles.stepButtonRow}>
+              <TouchableOpacity
+                onPress={() => setCurrentStep(currentStep > 0 ? currentStep - 1 : currentStep)}
+                style={styles.stepButton}
+              >
+                <Ionicons name="chevron-back" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Previous</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (currentStep < instructions.length - 1) {
+                    setCurrentStep(currentStep + 1);
+                  } else {
+                    Alert.alert("Packing Complete", "The packing plan has been completed!");
+                  }
+                }}
+                style={styles.stepButton}
+              >
+                <Text style={styles.buttonText}>Next</Text>
+                <Ionicons name="chevron-forward" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               onPress={resetForm}
-              style={{
-                backgroundColor: "#A9D6E5", // Light red color
-                paddingVertical: 10,
-                paddingHorizontal: 30,
-                borderRadius: 20, // Rounded corners
-                alignItems: "center",
-                marginTop: 15, // Adds some space from the Start Packing button
-              }}
+              style={styles.cancelButtonFull}
             >
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: "bold",
-                }}
-              >
-                Cancel
-              </Text>
+              <Ionicons name="close" size={20} color="#fff" />
+              <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      )}
-
-      {pageStep === 3 && (
-        <View style={{ flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
-          <Text style={{ fontSize: 24, fontWeight: "bold" }}>
-            Step {currentStep + 1}
-          </Text>
-  
-          {/* Display the current instruction */}
-          {instructions.length > 0 && instructions[currentStep] && (
-            <View style={{ marginVertical: 20, alignItems: "center" }}>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-               {instructions[currentStep].steps[0].instruction}
-              </Text>
-  
-              {/* Display the 3D model */}
-              <Container3D instructions={instructions} currentStep={currentStep} />
-              {/* <Container3D/> */}
-            </View>
-          )}
-  
-          {/* Buttons to navigate through steps */}
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 20 }}>
-            <TouchableOpacity
-              onPress={() => setCurrentStep(currentStep > 0 ? currentStep - 1 : currentStep)} // Go to previous step
-              style={styles.stepButton}
-            >
-              <Text style={styles.buttonText}>Previous</Text>
-            </TouchableOpacity>
-  
-            <TouchableOpacity
-              onPress={() => {
-                // Go to next step or reset if at the last step
-                if (currentStep < instructions.length - 1) {
-                  setCurrentStep(currentStep + 1);
-                } else {
-                  // All steps completed, show success message or navigate to another screen
-                  Alert.alert("Packing Complete", "The packing plan has been completed!");
-                }
-              }}
-              style={styles.stepButton}
-            >
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
-          </View>
-  
-          {/* Cancel Button */}
-          <TouchableOpacity onPress={resetForm} style={styles.cancelButton}>
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-      )}
-    </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-const styles = {
-  stepButton: {
-    backgroundColor: "#A9D6E5", // Light blue color
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 20,
-    alignItems: "center",
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#121b2e',
+  },
+  header: {
+    backgroundColor: '#192841',
+    padding: 16,
+    paddingTop: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#263c5a',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#8a9bae',
+    marginTop: 4,
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  formContainer: {
+    backgroundColor: '#192841',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 20,
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  sectionContainer: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 12,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: '#8a9bae',
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: '#253958',
+    borderRadius: 6,
+    height: 46,
+    paddingHorizontal: 12,
+    color: '#ffffff',
+    marginBottom: 12,
+  },
+  pickerContainer: {
+    backgroundColor: '#253958',
+    borderRadius: 6,
+    height: 46,
+    marginBottom: 12,
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  picker: {
+    backgroundColor: '#253958',
+    color: '#ffffff',
+    marginTop: -10,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  switchLabel: {
+    fontSize: 16,
+    color: '#ffffff',
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2980b9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  viewGroupsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2c3e50',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   buttonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  containerOption: {
+    backgroundColor: '#253958',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  containerOptionSelected: {
+    backgroundColor: '#2980b9',
+  },
+  containerOptionText: {
+    color: '#8a9bae',
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
+  },
+  containerOptionTextSelected: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  nextButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#27ae60',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flex: 0.48,
+  },
+  startPackingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#27ae60',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flex: 0.48,
   },
   cancelButton: {
-    backgroundColor: "#FF6347", // Red color for Cancel
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 20,
-    alignItems: "center",
-    marginTop: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e74c3c',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flex: 0.48,
   },
-};
+  cancelButtonFull: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e74c3c',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#121b2e',
+  },
+  modalContent: {
+    flex: 1,
+    backgroundColor: '#192841',
+    margin: 20,
+    borderRadius: 8,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  modalList: {
+    flex: 1,
+  },
+  modalItem: {
+    backgroundColor: '#253958',
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  modalItemText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalItemSubtext: {
+    color: '#8a9bae',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  closeModalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e74c3c',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  // Summary styles
+  summaryItem: {
+    backgroundColor: '#1e3254',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+  },
+  summaryHeader: {
+    marginBottom: 8,
+  },
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  summaryText: {
+    fontSize: 14,
+    color: '#8a9bae',
+    marginBottom: 4,
+  },
+  containerSummary: {
+    backgroundColor: '#253958',
+    padding: 12,
+    borderRadius: 6,
+  },
+  containerSummaryText: {
+    fontSize: 16,
+    color: '#2980b9',
+    fontWeight: 'bold',
+  },
+  // Step 3 styles
+  instructionContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  instructionText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  placeholder3D: {
+    backgroundColor: '#253958',
+    borderRadius: 8,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 200,
+  },
+  placeholderText: {
+    color: '#8a9bae',
+    fontSize: 16,
+    marginTop: 8,
+  },
+  stepButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  stepButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2980b9',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flex: 0.48,
+  }
+})
+
 
