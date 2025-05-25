@@ -77,7 +77,7 @@ jobs:
             pm2 save
             sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
 
-            # ===== Verification =====
+            # ===== Verification ======
             echo "Flask service status:"
             sudo systemctl status flask-api --no-pager
             echo "Gunicorn processes:"
