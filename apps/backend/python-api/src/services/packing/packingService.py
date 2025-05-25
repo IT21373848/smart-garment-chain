@@ -1,13 +1,13 @@
 import os
-from openai import OpenAI
+
 from dotenv import load_dotenv
+import google.generativeai as genai
 from services.packing.data import GARMENT_BOXES, CONTAINERS
 
 load_dotenv()
 
 # Get the API key from environment variable
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key) if api_key else None
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 def generate_packing_plan(box_data, container_type):
     container = next((c for c in CONTAINERS if c['type'] == container_type), None)
@@ -48,24 +48,23 @@ def generate_packing_plan(box_data, container_type):
                 }, 200
 
             prompt = (
-                f"Create a friendly, clear, and humanized packing instruction for placing a box of type {type_name} "
-                f"at position {tuple(current_position.values())}. The box dimensions are {box_size} and the box weight "
-                f"is {box_weight}. Also, mention if the box should be placed next to others or any specific instructions for placement."
+                f"Given the box type '{type_name}' and its position {tuple(current_position.values())} inside a container, "
+                "write simple, clear, and friendly step-by-step packing instructions that a person can follow easily. "
+                "Convert the coordinates into natural language descriptions like 'in the corner', 'next to', or 'on top of'. "
+                "Keep instructions short, numbered, and focused on placement steps only. "
+                "For example:\n"
+                "Step 1: Place the box type __ in the corner of the container.\n"
+                "Step 2: Stack 2 more boxes on top.\n"
+                "If needed, mention if the box should be placed next to other boxes or stacked.\n"
+                "Avoid technical jargon or repeating details like dimensions or weight."
             )
 
             try:
-                if client:
-                    response = client.completion.create(
-                        model="gpt-3.5-turbo",
-                        prompt=prompt,
-                        max_tokens=100,
-                        temperature=0.7
-                    )
-                    instruction_text = response.choices[0].text.strip()
-                else:
-                    print("OpenAI API key not configured.")
-                    instruction_text = f"Place the {type_name} box at position {tuple(current_position.values())}."
+                model = genai.GenerativeModel('gemini-2.0-flash')
 
+                response = model.generate_content(prompt)
+                print(response.text)
+                instruction_text = response.text
             except Exception as e:
                 # In case of an API failure, use a default text
                 print(f"OpenAI API call failed: {e}")
