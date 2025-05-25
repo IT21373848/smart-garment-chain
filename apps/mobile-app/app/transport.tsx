@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from "@react-navigation/native";
+import Toast from 'react-native-toast-message';
 
 // Define the types
 interface Delivery {
@@ -59,16 +60,34 @@ export default function TransportScreen() {
     const navigation = useNavigation(); // Get navigation instance
 
     // Sample data to match your request body
-    const savedLocations: Location[] = [
-        { id: "start", name: "Main Warehouse", lat: 6.745142, lng: 80.129544 },
-        { id: "dest1", name: "Colombo City", lat: 6.927079, lng: 79.861244 },
-        { id: "dest2", name: "Dehiwala", lat: 6.912257, lng: 79.924209 },
-        { id: "dest3", name: "Kandy", lat: 7.290572, lng: 80.633726 },
-        { id: "dest4", name: "Badulla", lat: 6.989558, lng: 81.055240 },
-        { id: "dest5", name: "Jaffna", lat: 8.927960, lng: 79.952904 },
-        { id: "dest6", name: "Matara", lat: 5.968764, lng: 80.565003 },
-        { id: "dest7", name: "Monaragala", lat: 6.949227, lng: 81.142373 },
-    ];
+    const [locations, setLocations] = useState<Location[]>([]);
+
+  useEffect(() => {
+    // Fetch data from the API using fetch
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch('http://192.168.43.89:3000/api/logistics/warehouses/index');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+
+        // Map the API response to the expected format
+        const fetchedLocations = data.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          lat: item.lat,
+          lng: item.lng,
+        }));
+
+        setLocations(fetchedLocations); // Set state with fetched data
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchLocations(); // Call the function to fetch data
+  }, []);
 
     // State structure matching your JSON format
     const [startPoint, setStartPoint] = useState<StartPoint>({ lat: '6.745142', lng: '80.129544' });
@@ -86,7 +105,7 @@ export default function TransportScreen() {
     // Function to handle start location selection
     const handleStartLocationChange = (locationId: string): void => {
         setSelectedStartLocation(locationId);
-        const location = savedLocations.find(loc => loc.id === locationId);
+        const location = locations.find(loc => loc.id === locationId);
         if (location) {
             setStartPoint({ lat: location.lat.toString(), lng: location.lng.toString() });
         }
@@ -94,7 +113,7 @@ export default function TransportScreen() {
 
     // Function to handle destination location selection
     const handleDestinationLocationChange = (destIndex: number, locationId: string): void => {
-        const location = savedLocations.find(loc => loc.id === locationId);
+        const location = locations.find(loc => loc.id === locationId);
         if (location) {
             const newDestinations = [...destinations];
             newDestinations[destIndex] = {
@@ -109,8 +128,8 @@ export default function TransportScreen() {
 
     // Function to add a new destination
     const addDestination = (): void => {
-        const defaultLocationId = savedLocations[1]?.id || "";
-        const defaultLocation = savedLocations.find(loc => loc.id === defaultLocationId);
+        const defaultLocationId = locations[1]?.id || "";
+        const defaultLocation = locations.find(loc => loc.id === defaultLocationId);
 
         setDestinations([
             ...destinations,
@@ -210,8 +229,14 @@ export default function TransportScreen() {
             const data = await response.json();
             console.log("API Response:", data);
 
-            // Show success alert
-            Alert.alert("Success", "Optimization request processed successfully!");
+            // Show success alert// Show success toast message
+            Toast.show({
+                type: 'success',
+                position: 'bottom',
+                text1: 'Optimization request processed successfully!',
+                text2: 'The optimization has been completed.',
+            });
+
 
             // Choose the right navigation method based on your setup
             if (router && router.push) {
@@ -220,13 +245,24 @@ export default function TransportScreen() {
                     pathname: '/OptimizedTransport', // Ensure this matches your actual route file
                     params: { transportData: JSON.stringify(data) }
                 });
-            
+
             } else {
                 console.error("Navigation object not available");
             }
         } catch (error) {
             console.error("Error sending request:", error);
-            Alert.alert("Error", "Failed to optimize transport.");
+
+            // Ensure error is a string or extract the message property
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            // Show error toast message
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Failed to Add Warehouse',
+                text2: errorMessage || 'Something went wrong.',
+            });
+
         }
     };
 
@@ -269,7 +305,7 @@ export default function TransportScreen() {
                                 onValueChange={handleStartLocationChange}
                                 dropdownIconColor="#fff"
                             >
-                                {savedLocations.map(location => (
+                                {locations.map(location => (
                                     <Picker.Item key={location.id} label={location.name} value={location.id} color="#000" />
                                 ))}
                                 <Picker.Item label="Custom Location" value="custom" color="#000" />
@@ -298,7 +334,7 @@ export default function TransportScreen() {
                                     onValueChange={(value) => handleDestinationLocationChange(destIndex, value)}
                                     dropdownIconColor="#fff"
                                 >
-                                    {savedLocations.filter(l => l.id !== "start").map(location => (
+                                    {locations.filter(l => l.id !== "start").map(location => (
                                         <Picker.Item key={location.id} label={location.name} value={location.id} color="#000" />
                                     ))}
                                     <Picker.Item label="Custom Location" value="custom" color="#000" />

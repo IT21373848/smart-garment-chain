@@ -1,4 +1,5 @@
 'use server'
+import { ORDER_STATUS } from "../../config/config";
 import { IOrder, OrderModel } from "../../models/OrderModel";
 import { createOrderNumber } from "../../utils/functions";
 import { predict } from "../predict/predict";
@@ -7,8 +8,28 @@ import { predict } from "../predict/predict";
 export async function createOrder(order: Partial<IOrder>) {
     try {
         order.orderNo = createOrderNumber();
-        if(!order?.status){
+        if (!order?.status) {
             order.status = "Pending";
+        }
+        const productionLineIds = order.productionLineNo?.map((line) => line?.toString());
+
+        if(!productionLineIds || productionLineIds?.length === 0) {
+            return JSON.parse(JSON.stringify({
+                status: 400,
+                message: "Please select at least one production line",
+                data: null
+            }))
+        }
+
+        //check is that production line already assigned to an order
+        const existingOrder = await OrderModel.findOne({ productionLineNo: { $in: productionLineIds }, status: ORDER_STATUS?.InProgress }).populate('productionLineNo');
+        console.log('existingOrder', existingOrder);
+        if (existingOrder) {
+            return JSON.parse(JSON.stringify({
+                status: 400,
+                message: existingOrder?.productionLineNo?.filter((line: any) => productionLineIds?.includes(line._id?.toString())).map((line: any) => line.lineNo) + " Production line/s busy",
+                data: null
+            }))
         }
         const newOrder = await OrderModel.create(order);
 
@@ -27,7 +48,7 @@ export async function createOrder(order: Partial<IOrder>) {
 }
 
 
-export async function getAllOrders(page: number = 1, limit: number = 10):Promise<{ status: number, message: string, data: any }> {
+export async function getAllOrders(page: number = 1, limit: number = 10): Promise<{ status: number, message: string, data: any }> {
     const today = new Date();
     try {
         const skip = (page - 1) * limit;
@@ -37,10 +58,10 @@ export async function getAllOrders(page: number = 1, limit: number = 10):Promise
 
         const predictedHours = await Promise.all(orders.map(async (order) => {
             const elapsedHours = (today.getTime() - order.createdAt.getTime()) / (1000 * 60 * 60);
-
+            console.log('Elapsed hours:', elapsedHours);
             const resp = await predict({
-                elapsed: elapsedHours,
-                emp: order?.productionLineNo?.reduce((acc : number, line: any) => acc + (line?.employeeIds?.length || 0), 0) || 0,
+                elapsed: 0,
+                emp: order?.productionLineNo?.reduce((acc: number, line: any) => acc + (line?.employeeIds?.length || 0), 0) || 0,
                 item: order.item,
                 lines: order.productionLineNo?.length,
                 qty: order.qty
@@ -48,7 +69,7 @@ export async function getAllOrders(page: number = 1, limit: number = 10):Promise
 
             return {
                 ...order?._doc,
-                estimatedHoursFromNow: resp.manHours
+                estimatedHoursFromNow: (resp.manHours - elapsedHours) <= 0 ? 0 : (resp.manHours - elapsedHours)
             }
         }))
         const totalOrders = await OrderModel.countDocuments();

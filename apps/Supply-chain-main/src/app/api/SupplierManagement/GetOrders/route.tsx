@@ -67,9 +67,23 @@ export async function GET() {
       },
     ]);
 
+    const targetIds = [
+      "67d6848a45729750266d85a7",
+      "67d684ae2fdcb4670b7c9282",
+      "67d685592fdcb4670b7c9286",
+      "67d6855b2fdcb4670b7c9288",
+      "67d6856c2fdcb4670b7c928a",
+      "67d685a52fdcb4670b7c928c"
+    ];
+    
+    // Filter out orders whose _id (converted to string) is in the targetIds array.
+    const filteredOrders = ordersWithoutTransactions.filter(
+      order => !targetIds.includes(order._id.toString())
+    );
+    
     return NextResponse.json(
       {
-        ordersWithoutTransactions,
+        ordersWithoutTransactions: filteredOrders,
       },
       { status: 200 }
     );

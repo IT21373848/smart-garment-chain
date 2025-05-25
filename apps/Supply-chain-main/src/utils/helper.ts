@@ -7,3 +7,5 @@ export const API_RESPONSE = (status: number, message: string, data: any): NextRe
         }
     });
 }
+
+export const isOrderDue = (estimatedDeadline: Date, deadline: Date) => estimatedDeadline > deadline

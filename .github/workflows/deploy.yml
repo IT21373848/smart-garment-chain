@@ -16,21 +16,21 @@ jobs:
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: 54.167.158.6
+          host: 3.83.33.228
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # Switch to home directory
             cd ~
 
-            # Install Docker & Git if not installed
-            if ! command -v docker &> /dev/null; then
-              sudo yum update -y
-              sudo yum install -y docker git
-              sudo systemctl start docker
-              sudo systemctl enable docker
-              sudo usermod -aG docker ec2-user
-            fi
+            # Install dependencies
+            sudo yum update -y
+            sudo yum install -y docker git
+
+            # Start Docker if not running
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker ec2-user
 
             # Install Docker Compose (Amazon Linux)
             if ! command -v docker-compose &> /dev/null; then
@@ -38,37 +38,49 @@ jobs:
               sudo chmod +x /usr/local/bin/docker-compose
             fi
 
-            # Clone the repository if not exists
+            # Install Node.js & PM2
+            if ! command -v pm2 &> /dev/null; then
+              npm install -g pm2
+            fi
+
+            # Clone or update repository
             if [ ! -d "supplychain-app" ]; then
               git clone https://github.com/IT21373848/smart-garment-chain.git supplychain-app
             fi
 
             # Navigate to the project folder
-            cd supplychain-app
+            cd supplychain-app/apps
 
-            # change dir to apps
-            cd apps
-
-            # Pull the latest code
+            # Pull latest code
+            git reset --hard
             git pull origin main
 
-            #change dir to  Supply-chain-main
-            cd Supply-chain-main
+            # 🔥 Stop any existing Flask process
+            pm2 stop flask-api || true
 
-            # yarn install
-            yarn
+            # Change directory to Python API
+            cd backend/python-api
+
+            # Install Python dependencies
+            pip install -r src/requirements.txt
+
+            # Start Flask using PM2 (Gunicorn for production)
+            pm2 start gunicorn --name flask-api --workers 4 --bind 0.0.0.0:5001 src.app:app
+
+            # 🔥 Stop any existing Next.js process
+            pm2 stop nextjs || true
+
+            # Change to Next.js project directory
+            cd ../../Supply-chain-main
+
+            # Install dependencies
+            yarn install --frozen-lockfile
 
             # Build the Next.js application
             yarn build
 
-            # Run the Next.js application using nohup
-            nohup yarn start > nextjs.log 2>&1 &
+            # Start Next.js using PM2
+            pm2 start yarn --name nextjs -- start
 
-            # Change the dir to ../backend/python-api
-            cd ../backend/python-api
-
-            # pip install
-            pip install -r src/requirements.txt
-
-            # Run the Python API using nohup
-            nohup python3 src/app.py
+            # Save PM2 process list
+            pm2 save
