@@ -61,8 +61,11 @@ jobs:
             # Change directory to Python API
             cd backend/python-api
 
-            # Install Python dependencies
-            pip install -r src/requirements.txt
+            # Set a custom TMPDIR to avoid RAM-backed /tmp limitations
+            mkdir -p ~/tmp_pip
+
+            # Install Python dependencies using custom TMPDIR
+            TMPDIR=~/tmp_pip pip install -r src/requirements.txt
 
             # Start Flask using PM2 (Gunicorn for production)
             pm2 start gunicorn --name flask-api --workers 4 --bind 0.0.0.0:5001 src.app:app
