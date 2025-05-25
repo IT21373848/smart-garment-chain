@@ -7,8 +7,7 @@ load_dotenv()
 
 # Get the API key from environment variable
 api_key = os.getenv("OPENAI_API_KEY")
-
-client = OpenAI(api_key=api_key)
+client = OpenAI(api_key=api_key) if api_key else None
 
 def generate_packing_plan(box_data, container_type):
     container = next((c for c in CONTAINERS if c['type'] == container_type), None)
@@ -48,17 +47,24 @@ def generate_packing_plan(box_data, container_type):
                     "plan": packing_plan
                 }, 200
 
+            prompt = (
+                f"Create a friendly, clear, and humanized packing instruction for placing a box of type {type_name} "
+                f"at position {tuple(current_position.values())}. The box dimensions are {box_size} and the box weight "
+                f"is {box_weight}. Also, mention if the box should be placed next to others or any specific instructions for placement."
+            )
+
             try:
-                prompt = f"Create a friendly, clear, and humanized packing instruction for placing a box of type {type_name} at position {tuple(current_position.values())}. The box dimensions are {box_size} and the box weight is {box_weight}. Also, mention if the box should be placed next to others or any specific instructions for placement."
-
-                response = client.completion.create(
-                    model="gpt-3.5-turbo",  # Or use a newer model like "gpt-4" if you have access
-                    prompt=prompt,
-                    max_tokens=100,
-                    temperature=0.7  # Adjust the creativity level
-                )
-
-                instruction_text = response.choices[0].text.strip()
+                if client:
+                    response = client.completion.create(
+                        model="gpt-3.5-turbo",
+                        prompt=prompt,
+                        max_tokens=100,
+                        temperature=0.7
+                    )
+                    instruction_text = response.choices[0].text.strip()
+                else:
+                    print("OpenAI API key not configured.")
+                    instruction_text = f"Place the {type_name} box at position {tuple(current_position.values())}."
 
             except Exception as e:
                 # In case of an API failure, use a default text
