@@ -71,7 +71,7 @@ After following the installation steps above, navigate to the root folder of the
  ```bash
 poetry run python src/app.py
 ```
-
+.
 
 
 ---
