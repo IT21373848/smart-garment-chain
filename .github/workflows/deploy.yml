@@ -3,14 +3,14 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # Change to your deployment branch if needed
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # Make secret available in job
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
       - name: Checkout Repository
@@ -22,78 +22,90 @@ jobs:
           host: 52.87.170.241
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: OPENAI_API_KEY  # Pass env to EC2 shell session
+          envs: OPENAI_API_KEY
           script: |
-            # Switch to home directory
+            # ----- Initial Setup -----
             cd ~
-
-            # Install dependencies
             sudo yum update -y
-            sudo yum install -y docker git
+            sudo yum install -y git docker
 
-            # Start Docker if not running
+            # ----- Install Node.js for Next.js -----
+            curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash -
+            sudo yum install -y nodejs
+            sudo npm install -g pm2
+
+            # ----- Install Python for Flask -----
+            sudo yum install -y python3-pip python3-devel gcc
+            python3 -m pip install --user virtualenv
+
+            # ----- Docker Setup (Optional for future use) -----
             sudo systemctl start docker
             sudo systemctl enable docker
-            sudo usermod -aG docker ec2-user
+            sudo usermod -aG docker ec2-user || true
 
-            # Install Docker Compose (Amazon Linux)
-            if ! command -v docker-compose &> /dev/null; then
-              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-            fi
-
-            # Install Node.js & PM2
-            if ! command -v pm2 &> /dev/null; then
-              npm install -g pm2
-            fi
-
-            # Clone or update repository
+            # ----- Clone/Update Repo -----
             if [ ! -d "supplychain-app" ]; then
               git clone https://github.com/IT21373848/smart-garment-chain.git supplychain-app
             fi
 
-            # Navigate to the project folder
-            cd supplychain-app/apps
-
-            # Pull latest code
+            cd supplychain-app
             git reset --hard
             git pull origin main
 
-            # 🔥 Stop any existing Flask process
-            pm2 stop flask-api || true
+            # ===== Flask (Gunicorn + systemd) =====
+            cd apps/backend/python-api
 
-            # Change directory to Python API
-            cd backend/python-api
+            # Create virtual environment
+            python3 -m venv venv
+            source venv/bin/activate
 
-            # Export the OpenAI key as env var for this session
-            export OPENAI_API_KEY=$OPENAI_API_KEY
-
-            # (Optional) Write to .env file for persistence
-            echo "OPENAI_API_KEY=$OPENAI_API_KEY" > .env
-
-            # Set a custom TMPDIR to avoid RAM-backed /tmp limitations
+            # Install dependencies with custom TMPDIR
             mkdir -p ~/tmp_pip
+            TMPDIR=~/tmp_pip pip install -r src/requirements.txt gunicorn
 
-            # Install Python dependencies using custom TMPDIR
-            TMPDIR=~/tmp_pip pip install -r src/requirements.txt
+            # Create systemd service file
+            sudo bash -c 'cat > /etc/systemd/system/flask-api.service <<EOL
+            [Unit]
+            Description=Flask API with Gunicorn
+            After=network.target
 
-            # Start Flask using PM2 (Gunicorn for production)
-            pm2 start gunicorn --name flask-api -- --workers 4 --bind 0.0.0.0:5001 src.app:app
+            [Service]
+            User=ec2-user
+            WorkingDirectory=/home/ec2-user/supplychain-app/apps/backend/python-api
+            Environment="OPENAI_API_KEY=$OPENAI_API_KEY"
+            ExecStart=/home/ec2-user/supplychain-app/apps/backend/python-api/venv/bin/gunicorn \
+              --workers 4 \
+              --bind 0.0.0.0:5001 \
+              src.app:app
+            Restart=always
 
-            # 🔥 Stop any existing Next.js process
-            pm2 stop nextjs || true
+            [Install]
+            WantedBy=multi-user.target
+            EOL'
 
-            # Change to Next.js project directory
+            # Reload and start Flask service
+            sudo systemctl daemon-reload
+            sudo systemctl enable flask-api
+            sudo systemctl restart flask-api
+
+            # ===== Next.js (PM2) =====
             cd ../../Supply-chain-main
 
             # Install dependencies
-            yarn install --frozen-lockfile
+            npm install --frozen-lockfile
 
-            # Build the Next.js application
-            yarn build
+            # Build and start with PM2
+            npm run build
+            pm2 delete nextjs || true
+            pm2 start npm --name nextjs -- start
 
-            # Start Next.js using PM2
-            pm2 start yarn --name nextjs -- start
-
-            # Save PM2 process list
+            # Persist PM2 process list
             pm2 save
+            sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
+
+            # ----- Verify Services -----
+            echo "Flask status:"
+            sudo systemctl status flask-api --no-pager
+
+            echo "PM2 list:"
+            pm2 list
