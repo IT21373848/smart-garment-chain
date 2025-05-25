@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-from routes.index import index as predictRoutes  # Import the Blueprint object
+from routes.index import index
 from routes.packingController import packingBluePrint
 from routes.supplierSelection import supplierSelection
 from routes.vehiclePredict import predictVehicle
@@ -11,7 +11,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Register Blueprint
 app.register_blueprint(predictVehicle)
-app.register_blueprint(predictRoutes)
+app.register_blueprint(index)
 app.register_blueprint(packingBluePrint)
 app.register_blueprint(supplierSelection)
 
