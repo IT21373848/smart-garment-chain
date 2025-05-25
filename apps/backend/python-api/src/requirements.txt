@@ -9,4 +9,4 @@ pymongo
 gym
 stable-baselines3
 shimmy
-openai
+google-generativeai
