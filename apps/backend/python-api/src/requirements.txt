@@ -6,3 +6,7 @@ requests
 python-dotenv
 flask_cors
 pymongo
+gym
+stable-baselines3
+shimmy
+openai
