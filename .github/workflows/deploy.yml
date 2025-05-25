@@ -27,18 +27,14 @@ jobs:
             # ----- Initial Setup -----
             cd ~
             sudo yum update -y
-            sudo yum install -y git docker
+            sudo yum install -y git docker python3-pip python3-devel gcc
 
             # ----- Install Node.js for Next.js -----
             curl -fsSL https://rpm.nodesource.com/setup_16.x | sudo bash -
             sudo yum install -y nodejs
             sudo npm install -g pm2
 
-            # ----- Install Python for Flask -----
-            sudo yum install -y python3-pip python3-devel gcc
-            python3 -m pip install --user virtualenv
-
-            # ----- Docker Setup (Optional for future use) -----
+            # ----- Docker Setup -----
             sudo systemctl start docker
             sudo systemctl enable docker
             sudo usermod -aG docker ec2-user || true
@@ -52,16 +48,18 @@ jobs:
             git reset --hard
             git pull origin main
 
-            # ===== Flask (Gunicorn + systemd) =====
+            # ===== Flask Setup =====
             cd apps/backend/python-api
 
-            # Create virtual environment
+            # Create/update virtual environment
             python3 -m venv venv
             source venv/bin/activate
 
-            # Install dependencies with custom TMPDIR
+            # Install Python dependencies with custom TMPDIR
             mkdir -p ~/tmp_pip
-            TMPDIR=~/tmp_pip pip install -r src/requirements.txt gunicorn
+            TMPDIR=~/tmp_pip pip install --upgrade pip
+            TMPDIR=~/tmp_pip pip install gunicorn -r src/requirements.txt
+            deactivate
 
             # Create systemd service file
             sudo bash -c 'cat > /etc/systemd/system/flask-api.service <<EOL
@@ -71,41 +69,43 @@ jobs:
 
             [Service]
             User=ec2-user
+            Group=ec2-user
             WorkingDirectory=/home/ec2-user/supplychain-app/apps/backend/python-api
+            Environment="PATH=/home/ec2-user/supplychain-app/apps/backend/python-api/venv/bin:/usr/bin"
             Environment="OPENAI_API_KEY=$OPENAI_API_KEY"
             ExecStart=/home/ec2-user/supplychain-app/apps/backend/python-api/venv/bin/gunicorn \
               --workers 4 \
               --bind 0.0.0.0:5001 \
               src.app:app
             Restart=always
+            RestartSec=10s
 
             [Install]
             WantedBy=multi-user.target
             EOL'
 
-            # Reload and start Flask service
+            # Reload and start service
             sudo systemctl daemon-reload
             sudo systemctl enable flask-api
             sudo systemctl restart flask-api
 
-            # ===== Next.js (PM2) =====
+            # ===== Next.js Setup =====
             cd ../../Supply-chain-main
 
-            # Install dependencies
+            # Install dependencies and build
             npm install --frozen-lockfile
-
-            # Build and start with PM2
             npm run build
+
+            # Start with PM2
             pm2 delete nextjs || true
             pm2 start npm --name nextjs -- start
-
-            # Persist PM2 process list
             pm2 save
             sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
 
-            # ----- Verify Services -----
-            echo "Flask status:"
+            # ===== Verification =====
+            echo "Flask service status:"
             sudo systemctl status flask-api --no-pager
-
-            echo "PM2 list:"
+            echo "Gunicorn processes:"
+            ps aux | grep gunicorn
+            echo "Next.js status:"
             pm2 list
