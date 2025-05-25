@@ -13,7 +13,7 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  StyleSheet
+  StyleSheet,
 } from "react-native";
 import Container3D from "./Container3D";
 import { Ionicons } from "@expo/vector-icons";
@@ -123,7 +123,8 @@ export default function PackingScreen() {
   const [instructions, setInstructions] = useState();
 
   const [currentStep, setCurrentStep] = useState(0); // To track the current step
-  
+
+  console.log("Instructions:", JSON.stringify(instructions, null, 2));
 
   // Add new box type
   const addBoxType = () => {
@@ -180,7 +181,7 @@ export default function PackingScreen() {
 
     try {
       const response = await fetch(
-        "http://172.28.6.189:3000/packing-prediction",
+        "http://52.87.170.241:3000/api/packing-prediction",
         {
           method: "POST",
           headers: {
@@ -190,20 +191,36 @@ export default function PackingScreen() {
         }
       );
 
-      const data = await response.json();
+      const text = await response.text();
+    
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.warn("Could not parse server response as JSON.");
+        console.log("Raw response text:", text);
+        throw new Error("Invalid response format from server.");
+      }
 
       if (response.ok) {
-        // Store instructions in the state
-        setInstructions(data[0].plan);
-        setPageStep(2); // Move to step 3
+        if (Array.isArray(data) && data[0]?.plan) {
+          setInstructions(data[0].plan);
+          setPageStep(2);
+        } else {
+          Alert.alert("Error", "Server returned an unexpected structure.");
+          console.log("Unexpected structure:", data);
+        }
       } else {
-        Alert.alert("Error", "There was an error with the packing request.");
+        const errorMessage =
+          data?.message ||
+          `Server error (${response.status}): Something went wrong.`;
+        Alert.alert("Error", errorMessage);
+        console.error("Server response data:", data);
       }
     } catch (error) {
-      Alert.alert(
-        "Error",
-        `Failed to connect to the server due to ${error.message}`
-      );
+      console.error("Request failed:", error);
+      Alert.alert("Error", `Failed to connect: ${error.message}`);
     }
   };
 
@@ -214,7 +231,9 @@ export default function PackingScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Packing Management</Text>
-        <Text style={styles.headerSubtitle}>Optimize your packing strategy</Text>
+        <Text style={styles.headerSubtitle}>
+          Optimize your packing strategy
+        </Text>
       </View>
 
       <ScrollView style={styles.content}>
@@ -260,18 +279,15 @@ export default function PackingScreen() {
 
               <View style={styles.switchContainer}>
                 <Text style={styles.switchLabel}>Allow Rotation:</Text>
-                <Switch 
-                  value={allowRotation} 
+                <Switch
+                  value={allowRotation}
                   onValueChange={setAllowRotation}
-                  trackColor={{ false: '#2c3e50', true: '#27ae60' }}
-                  thumbColor={allowRotation ? '#ffffff' : '#8a9bae'}
+                  trackColor={{ false: "#2c3e50", true: "#27ae60" }}
+                  thumbColor={allowRotation ? "#ffffff" : "#8a9bae"}
                 />
               </View>
 
-              <TouchableOpacity
-                onPress={addBoxType}
-                style={styles.addButton}
-              >
+              <TouchableOpacity onPress={addBoxType} style={styles.addButton}>
                 <Ionicons name="add-circle" size={20} color="#fff" />
                 <Text style={styles.buttonText}>Add Box Type</Text>
               </TouchableOpacity>
@@ -282,7 +298,8 @@ export default function PackingScreen() {
               >
                 <Ionicons name="eye" size={20} color="#fff" />
                 <Text style={styles.buttonText}>
-                  Added Groups: {boxData.length} {boxData.length > 0 && "(Click to view)"}
+                  Added Groups: {boxData.length}{" "}
+                  {boxData.length > 0 && "(Click to view)"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -325,14 +342,18 @@ export default function PackingScreen() {
                   key={container.type}
                   style={[
                     styles.containerOption,
-                    selectedContainer === container.type && styles.containerOptionSelected
+                    selectedContainer === container.type &&
+                      styles.containerOptionSelected,
                   ]}
                   onPress={() => setSelectedContainer(container.type)}
                 >
-                  <Text style={[
-                    styles.containerOptionText,
-                    selectedContainer === container.type && styles.containerOptionTextSelected
-                  ]}>
+                  <Text
+                    style={[
+                      styles.containerOptionText,
+                      selectedContainer === container.type &&
+                        styles.containerOptionTextSelected,
+                    ]}
+                  >
                     {container.type}
                   </Text>
                 </TouchableOpacity>
@@ -348,10 +369,7 @@ export default function PackingScreen() {
                 <Text style={styles.buttonText}>Next</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={resetForm}
-                style={styles.cancelButton}
-              >
+              <TouchableOpacity onPress={resetForm} style={styles.cancelButton}>
                 <Ionicons name="close" size={20} color="#fff" />
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
@@ -369,13 +387,19 @@ export default function PackingScreen() {
               {boxData.map((item, index) => (
                 <View key={index} style={styles.summaryItem}>
                   <View style={styles.summaryHeader}>
-                    <Text style={styles.summaryTitle}>📦 {item.material_id}</Text>
+                    <Text style={styles.summaryTitle}>
+                      📦 {item.material_id}
+                    </Text>
                   </View>
-                  <Text style={styles.summaryText}>Quantity: {item.quantity} pcs</Text>
-                  <Text style={[
-                    styles.summaryText,
-                    { color: item.allow_rotation ? '#27ae60' : '#e74c3c' }
-                  ]}>
+                  <Text style={styles.summaryText}>
+                    Quantity: {item.quantity} pcs
+                  </Text>
+                  <Text
+                    style={[
+                      styles.summaryText,
+                      { color: item.allow_rotation ? "#27ae60" : "#e74c3c" },
+                    ]}
+                  >
                     Rotation: {item.allow_rotation ? "Allowed" : "Not Allowed"}
                   </Text>
                 </View>
@@ -385,7 +409,9 @@ export default function PackingScreen() {
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Selected Container</Text>
               <View style={styles.containerSummary}>
-                <Text style={styles.containerSummaryText}>{selectedContainer}</Text>
+                <Text style={styles.containerSummaryText}>
+                  {selectedContainer}
+                </Text>
               </View>
             </View>
 
@@ -398,10 +424,7 @@ export default function PackingScreen() {
                 <Text style={styles.buttonText}>Start Packing</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={resetForm}
-                style={styles.cancelButton}
-              >
+              <TouchableOpacity onPress={resetForm} style={styles.cancelButton}>
                 <Ionicons name="close" size={20} color="#fff" />
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
@@ -414,23 +437,32 @@ export default function PackingScreen() {
             <Text style={styles.formTitle}>Step {currentStep + 1}</Text>
 
             {instructions.length > 0 && instructions[currentStep] && (
-              <View style={styles.instructionContainer}>
-                <Text style={styles.instructionText}>
-                  {instructions[currentStep].steps[0].instruction}
-                </Text>
+              <>
+                <View style={{ height: 300 }}>
+                  <Container3D instructions={instructions} currentStep={currentStep} />
+                </View>
 
-                {/* Your 3D Container component would go here */}
-                {/* <Container3D instructions={instructions} currentStep={currentStep} /> */}
-                <View style={styles.placeholder3D}>
+                <View style={styles.instructionContainer}>
+                  <Text style={styles.instructionText}>
+                    {instructions[currentStep].steps[0].instruction}
+                  </Text>
+                </View>
+              </>
+            )}
+
+
+            {/* <View style={styles.placeholder3D}>
                   <Ionicons name="cube" size={48} color="#8a9bae" />
                   <Text style={styles.placeholderText}>3D Model View</Text>
-                </View>
-              </View>
-            )}
+                </View> */}
 
             <View style={styles.stepButtonRow}>
               <TouchableOpacity
-                onPress={() => setCurrentStep(currentStep > 0 ? currentStep - 1 : currentStep)}
+                onPress={() =>
+                  setCurrentStep(
+                    currentStep > 0 ? currentStep - 1 : currentStep
+                  )
+                }
                 style={styles.stepButton}
               >
                 <Ionicons name="chevron-back" size={20} color="#fff" />
@@ -442,7 +474,10 @@ export default function PackingScreen() {
                   if (currentStep < instructions.length - 1) {
                     setCurrentStep(currentStep + 1);
                   } else {
-                    Alert.alert("Packing Complete", "The packing plan has been completed!");
+                    Alert.alert(
+                      "Packing Complete",
+                      "The packing plan has been completed!"
+                    );
                   }
                 }}
                 style={styles.stepButton}
@@ -466,27 +501,26 @@ export default function PackingScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121b2e',
+    backgroundColor: "#121b2e",
   },
   header: {
-    backgroundColor: '#192841',
+    backgroundColor: "#192841",
     padding: 16,
     paddingTop: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#263c5a',
+    borderBottomColor: "#263c5a",
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#8a9bae',
+    color: "#8a9bae",
     marginTop: 4,
   },
   content: {
@@ -494,15 +528,15 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   formContainer: {
-    backgroundColor: '#192841',
+    backgroundColor: "#192841",
     borderRadius: 8,
     padding: 16,
     marginBottom: 20,
   },
   formTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
     marginBottom: 16,
   },
   sectionContainer: {
@@ -510,125 +544,125 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
     marginBottom: 12,
   },
   inputLabel: {
     fontSize: 14,
-    color: '#8a9bae',
+    color: "#8a9bae",
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#253958',
+    backgroundColor: "#253958",
     borderRadius: 6,
     height: 46,
     paddingHorizontal: 12,
-    color: '#ffffff',
+    color: "#ffffff",
     marginBottom: 12,
   },
   pickerContainer: {
-    backgroundColor: '#253958',
+    backgroundColor: "#253958",
     borderRadius: 6,
     height: 46,
     marginBottom: 12,
-    justifyContent: 'center',
-    overflow: 'hidden',
+    justifyContent: "center",
+    overflow: "hidden",
   },
   picker: {
-    backgroundColor: '#253958',
-    color: '#ffffff',
+    backgroundColor: "#253958",
+    color: "#ffffff",
     marginTop: -10,
   },
   switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 16,
     paddingVertical: 8,
   },
   switchLabel: {
     fontSize: 16,
-    color: '#ffffff',
+    color: "#ffffff",
   },
   addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2980b9',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2980b9",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 12,
   },
   viewGroupsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2c3e50',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2c3e50",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 12,
   },
   buttonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
+    color: "#ffffff",
+    fontWeight: "bold",
     marginLeft: 8,
   },
   containerOption: {
-    backgroundColor: '#253958',
+    backgroundColor: "#253958",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 6,
     marginBottom: 8,
   },
   containerOptionSelected: {
-    backgroundColor: '#2980b9',
+    backgroundColor: "#2980b9",
   },
   containerOptionText: {
-    color: '#8a9bae',
+    color: "#8a9bae",
     fontSize: 16,
   },
   containerOptionTextSelected: {
-    color: '#ffffff',
-    fontWeight: 'bold',
+    color: "#ffffff",
+    fontWeight: "bold",
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 16,
   },
   nextButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#27ae60',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#27ae60",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     flex: 0.48,
   },
   startPackingButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#27ae60',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#27ae60",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     flex: 0.48,
   },
   cancelButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e74c3c',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e74c3c",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     flex: 0.48,
   },
   cancelButtonFull: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#e74c3c',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e74c3c",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -637,45 +671,45 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: '#121b2e',
+    backgroundColor: "#121b2e",
   },
   modalContent: {
     flex: 1,
-    backgroundColor: '#192841',
+    backgroundColor: "#192841",
     margin: 20,
     borderRadius: 8,
     padding: 16,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
     marginBottom: 16,
   },
   modalList: {
     flex: 1,
   },
   modalItem: {
-    backgroundColor: '#253958',
+    backgroundColor: "#253958",
     padding: 12,
     borderRadius: 6,
     marginBottom: 8,
   },
   modalItemText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   modalItemSubtext: {
-    color: '#8a9bae',
+    color: "#8a9bae",
     fontSize: 14,
     marginTop: 4,
   },
   closeModalButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#e74c3c',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e74c3c",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -683,7 +717,7 @@ const styles = StyleSheet.create({
   },
   // Summary styles
   summaryItem: {
-    backgroundColor: '#1e3254',
+    backgroundColor: "#1e3254",
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
@@ -693,63 +727,61 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
   },
   summaryText: {
     fontSize: 14,
-    color: '#8a9bae',
+    color: "#8a9bae",
     marginBottom: 4,
   },
   containerSummary: {
-    backgroundColor: '#253958',
+    backgroundColor: "#253958",
     padding: 12,
     borderRadius: 6,
   },
   containerSummaryText: {
     fontSize: 16,
-    color: '#2980b9',
-    fontWeight: 'bold',
+    color: "#2980b9",
+    fontWeight: "bold",
   },
   // Step 3 styles
   instructionContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: 20,
   },
   instructionText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#ffffff",
+    textAlign: "center",
     marginBottom: 20,
   },
   placeholder3D: {
-    backgroundColor: '#253958',
+    backgroundColor: "#253958",
     borderRadius: 8,
     padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minHeight: 200,
   },
   placeholderText: {
-    color: '#8a9bae',
+    color: "#8a9bae",
     fontSize: 16,
     marginTop: 8,
   },
   stepButtonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   stepButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2980b9',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2980b9",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     flex: 0.48,
-  }
-})
-
-
+  },
+});
