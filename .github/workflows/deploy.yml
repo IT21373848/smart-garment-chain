@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # ✅ Step 1: Make secret available in job
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  # Make secret available in job
 
     steps:
       - name: Checkout Repository
@@ -22,7 +22,7 @@ jobs:
           host: 52.87.170.241
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: OPENAI_API_KEY  # ✅ Step 2: Pass env to EC2 shell session
+          envs: OPENAI_API_KEY  # Pass env to EC2 shell session
           script: |
             # Switch to home directory
             cd ~
