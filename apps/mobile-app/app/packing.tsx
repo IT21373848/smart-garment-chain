@@ -159,7 +159,7 @@ export default function PackingScreen() {
       alert("Please add at least one box type.");
       return;
     }
-    // setPageStep(2);
+    // setStep(2);
     startPacking();
   };
 
@@ -180,7 +180,7 @@ export default function PackingScreen() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:5001/packing-prediction",
+        "http://172.28.6.189:3000/packing-prediction",
         {
           method: "POST",
           headers: {
