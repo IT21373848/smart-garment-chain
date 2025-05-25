@@ -39,7 +39,7 @@ const LocationsScreen = () => {
   const fetchLocations = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.43.89:3000/api/logistics/warehouses/index');
+      const response = await fetch('http://52.87.170.241:3000/api/logistics/warehouses/index');
       const data = await response.json();
       setLocations(data);
       
@@ -66,7 +66,7 @@ const LocationsScreen = () => {
   // Handle DELETE Request
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch('http://192.168.43.89:3000/api/logistics/warehouses/index', {
+      const response = await fetch('http://52.87.170.241:3000/api/logistics/warehouses/index', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ const LocationsScreen = () => {
   // Handle PUT Request (Update Location)
   const handleUpdate = async (location: Location) => {
     try {
-      const response = await fetch('http://192.168.43.89:3000/api/logistics/warehouses/index', {
+      const response = await fetch('http://52.87.170.241:3000/api/logistics/warehouses/index', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

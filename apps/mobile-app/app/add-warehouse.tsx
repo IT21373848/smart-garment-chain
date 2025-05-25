@@ -89,7 +89,7 @@ const AddWarehouse: React.FC = () => {
         };
 
         try {
-            const response = await fetch("http://192.168.43.89:3000/api/logistics/warehouses/index", {
+            const response = await fetch("http://52.87.170.241:3000/api/logistics/warehouses/index", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

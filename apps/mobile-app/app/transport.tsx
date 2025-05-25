@@ -66,7 +66,7 @@ export default function TransportScreen() {
     // Fetch data from the API using fetch
     const fetchLocations = async () => {
       try {
-        const response = await fetch('http://192.168.43.89:3000/api/logistics/warehouses/index');
+        const response = await fetch('http://52.87.170.241:3000/api/logistics/warehouses/index');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -217,7 +217,7 @@ export default function TransportScreen() {
 
         try {
             // Send the API request
-            const response = await fetch("http://192.168.43.89:3000/api/logistics/calculate", {
+            const response = await fetch("http://52.87.170.241:3000/api/logistics/calculate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
