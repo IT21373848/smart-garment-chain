@@ -3,7 +3,7 @@ import { getDesigns } from '../../../../actions/design/design'
 import { CustomTable, TableHeaderType } from '@/components/Dashboard/CustomTable'
 import CreateDesignModal from '@/components/ProductionScheduling/CreateDesignModal'
 
-type Props = {}
+// type Props = {}
 
 const designHeaders: TableHeaderType[] = [
     {
@@ -20,7 +20,7 @@ const designHeaders: TableHeaderType[] = [
     }
 ]
 
-const DesignPage = async (props: Props) => {
+const DesignPage = async () => {
 
     const designs = await getDesigns()
 
