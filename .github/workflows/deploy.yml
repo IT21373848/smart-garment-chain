@@ -71,7 +71,7 @@ jobs:
             TMPDIR=~/tmp_pip pip install -r src/requirements.txt
 
             # Start Flask using PM2 (Gunicorn for production)
-            pm2 start gunicorn --name flask-api --workers 4 --bind 0.0.0.0:5001 src.app:app --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            pm2 start gunicorn --name flask-api -- --workers 4 --bind 0.0.0.0:5001 src.app:app --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
 
             # 🔥 Stop any existing Next.js process
             pm2 stop nextjs || true
