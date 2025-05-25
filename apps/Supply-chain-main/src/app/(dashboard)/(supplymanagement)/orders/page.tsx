@@ -82,7 +82,7 @@ function OrderDetailContent() {
         ...Object.fromEntries(itemDetails.map((item) => [item.VName, parameterValues[item.VName] || 0])),
       }
 
-      const response = await fetch("http://localhost:3000/api/SupplierManagement/MakeTransaction", {
+      const response = await fetch("/api/SupplierManagement/MakeTransaction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(transactionData),

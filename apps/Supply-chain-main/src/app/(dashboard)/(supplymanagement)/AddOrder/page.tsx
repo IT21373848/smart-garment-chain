@@ -23,10 +23,12 @@ function OrderDetails() {
   const [selectedSupplier, setSelectedSupplier] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
+  const FLASK_API_URL = process.env.NEXT_PUBLIC_FLASK_SERVER as string
+  
   useEffect(() => {
     if (itemName) {
       setIsLoading(true)
-      fetch("http://127.0.0.1:5001/supplier-prediction", {
+      fetch(`${FLASK_API_URL}/supplier-prediction`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ Item_Name: itemName }),
