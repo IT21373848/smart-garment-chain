@@ -2,19 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import {connectToMongoDB} from "@/lib/mongo"
 import Transactions from "@/models/Transaction";
 import Orders from "@/models/Orders";
-import { checkItem } from "./processQualityItems";
-import {Interlining} from "./Items/Interlining"
-import { Cotton_Fabric } from "./Items/Cotton_Fabric";
-import { Buttons } from "./Items/Buttons";
-import { Elastic_Bands } from "./Items/Elastic_Bands";
-import { Polyester_Fabric } from "./Items/Polyester_Fabric";
-import { Sewing_Thread } from "./Items/Sewing Thread";
-import { Silk_Fabric } from "./Items/Silk_Fabric";
-import { Zippers } from "./Items/Zippers";
+import submittransactions from "@/models/SubmitTransaction";
 
 export async function POST(request: NextRequest) {
     let body;
-    const qualityItems: IQuality[] = [new Buttons(),new Cotton_Fabric(),new Elastic_Bands(),new Interlining(),new Polyester_Fabric(),new Sewing_Thread(),new Silk_Fabric(),new Zippers()];
     try{
         
         try {
@@ -26,14 +17,13 @@ export async function POST(request: NextRequest) {
             );
         }
         
-        const { Order_Id, Defect_Rates,Price, Date_of_Receipt } = body;
-        if (!Order_Id || !Defect_Rates || !Price || !Date_of_Receipt) {
+        const { Order_Id, Defect_Rates,Price, Date_of_Receipt,Quality } = body;
+        if (!Order_Id || !Defect_Rates || !Price || !Date_of_Receipt || !Quality) {
             return NextResponse.json(
               { message: "Missing fields" },
               { status: 400 }
             );
         }
-        let Quality = "" ;
 
         const db = await connectToMongoDB();
     
@@ -45,30 +35,6 @@ export async function POST(request: NextRequest) {
             );
         }
         
-        const itemClass = checkItem(qualityItems, isOrderExist.Item_Name);
-        if (itemClass === 0) {
-            return NextResponse.json(
-                { message: "Item not found" },
-                { status: 500 }
-              );
-        } else {
-            const requiredParams = itemClass.getRequiredParameters();
-            const params: { [key: string]: any } = {};
-
-            for (const param of requiredParams) {
-            if (!body[param.VName]) {
-                return NextResponse.json(
-                { message: `Missing field: ${param.name}` },
-                { status: 400 }
-                );
-            }
-            params[param.VName] = body[param.VName];
-            }
-
-            Quality = itemClass.calculateQuality(params).toString();
-            // console.log(Quality);
-        }
-
         await Transactions.create({
             Order_Id,
             Quality,
@@ -76,6 +42,8 @@ export async function POST(request: NextRequest) {
             Defect_Rates,
             Date_of_Receipt
         });
+
+        await submittransactions.deleteOne({ Order_Id });
 
         return NextResponse.json(
             { message: "Transaction saved successfully" },{ status: 200 }

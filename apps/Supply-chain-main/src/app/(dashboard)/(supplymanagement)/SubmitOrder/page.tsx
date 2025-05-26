@@ -35,7 +35,7 @@ export default function OrdersPage() {
     async function fetchOrders() {
       try {
         setLoading(true)
-        const response = await fetch("/api/SupplierManagement/GetOrders")
+        const response = await fetch("/api/SupplierManagement/GetSubmitOrders")
         const data = await response.json()
         setOrders(data.ordersWithoutTransactions)
       } catch (error) {
@@ -55,7 +55,7 @@ export default function OrdersPage() {
       Required_Date: order.Required_Date,
       Supplier_Name: order.Supplier_Name,
     }
-    router.push(`/orders?orderId=${order._id}&orderData=${encodeURIComponent(JSON.stringify(data))}`)
+    router.push(`/Suborders?orderId=${order._id}&orderData=${encodeURIComponent(JSON.stringify(data))}`)
   }
 
   // Function to calculate days remaining until required date

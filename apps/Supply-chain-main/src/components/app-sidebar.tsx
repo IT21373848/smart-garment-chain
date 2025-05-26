@@ -65,8 +65,12 @@ const data = {
           url: "./MakeOrders",
         },
         {
-          title: "Make Transaction",
-          url: "./MakeTransaction",
+          title: "Submit Orders",
+          url: "./SubmitOrder",
+        },
+        {
+          title: "Track Orders",
+          url: "./TrackOrders",
         },
       ],
     },

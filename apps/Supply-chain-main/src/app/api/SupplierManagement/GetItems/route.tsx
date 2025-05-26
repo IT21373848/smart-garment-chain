@@ -17,7 +17,7 @@ export async function GET() {
         const itemList = ItemList(qualityItems)
         return NextResponse.json(
             { data: itemList },{ status: 200 }
-        );
+        );  
 
     }catch(error){
         console.error(error);
