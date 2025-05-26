@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect } from 'react'
-import { CLOTHING_ITEMS } from '../../../../config/config'
+import { CLOTHING_ITEMS, DESIGNS } from '../../../../config/config'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { IProdLine } from '../../../../models/LineModel'
@@ -16,11 +16,15 @@ import { createOrder } from '../../../../actions/orders/order'
 import { ObjectId } from 'mongoose'
 import { useRouter } from 'next/navigation'
 import { convertToTimeRemaining } from '../../../../utils/functions'
+import { IDesign } from '../../../../models/DesignModel'
+import { getDesigns } from '../../../../actions/design/design'
 
 const History = () => {
   const [isPredicting, setIsPredicting] = React.useState<boolean>(false)
   const [selectedItem, setSelectedItem] = React.useState<string>('')
   const [quantity, setQuantity] = React.useState<number | null>(0)
+  const [designs, setDesigns] = React.useState<IDesign[]>([])
+  const [selectedDesign, setDesign] = React.useState<IDesign | null>(null)
   const [productionLines, setProductionLines] = React.useState<Partial<IProdLine[]>>()
   const [selectedLines, setSelectedLines] = React.useState<Partial<IProdLine[]>>([])
   const [predictedManHours, setPredictedManHours] = React.useState<number>(0)
@@ -32,6 +36,8 @@ const History = () => {
 
   const getProdLines = async () => {
     const lines = await getAllProductionLines()
+    const d = await getDesigns()
+    setDesigns(JSON.parse(d))
     setProductionLines(lines.data)
   }
 
@@ -100,7 +106,7 @@ const History = () => {
           deadline: new Date(estimatedEndDate.getTime() + 7 * 24 * 60 * 60 * 1000),
           estimatedDeadline: estimatedEndDate,
           status: 'In Progress'
-        })
+        }, selectedDesign?.id as string)
 
         if (resp.status !== 200) {
           throw new Error(resp.message)
@@ -132,6 +138,23 @@ const History = () => {
               {CLOTHING_ITEMS.map((item) => (
                 <SelectItem key={item} value={item}>
                   {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Label className='mt-5 mb-2'>Design</Label>
+          <Select
+            value={selectedDesign?.id}
+            onValueChange={(value) => setDesign(designs?.find((design) => design.id === value) || null)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a design" />
+            </SelectTrigger>
+            <SelectContent>
+              {designs?.map((design) => (
+                <SelectItem key={design.id} value={design?.id}>
+                  {design.id} + {design.name}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -1,6 +1,6 @@
 'use server'
 //use server dapu files server files,but mewa frontend eke direct call krnna puluwan normal function wagema
-import { IUser, UserModel } from "../../models/User"
+import { createNewEmployeeId, IUser, UserModel } from "../../models/User"
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 import { sign as SignFunction } from 'jsonwebtoken'
@@ -65,11 +65,17 @@ export async function registerUser(name: string, email: string, password: string
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        const empid = createNewEmployeeId()
+
+        console.log('generated id', empid)
+
         const newUser = new UserModel({
             name,
             email,
+            empId: empid,
             password: hashedPassword,
-            role
+            role,
+
         });
 
         await newUser.save();

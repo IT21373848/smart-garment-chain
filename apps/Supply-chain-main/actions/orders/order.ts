@@ -5,15 +5,15 @@ import { createOrderNumber } from "../../utils/functions";
 import { predict } from "../predict/predict";
 
 
-export async function createOrder(order: Partial<IOrder>) {
+export async function createOrder(order: Partial<IOrder>, designId: string) {
     try {
-        order.orderNo = createOrderNumber();
+        order.orderNo = createOrderNumber(designId);
         if (!order?.status) {
             order.status = "Pending";
         }
         const productionLineIds = order.productionLineNo?.map((line) => line?.toString());
 
-        if(!productionLineIds || productionLineIds?.length === 0) {
+        if (!productionLineIds || productionLineIds?.length === 0) {
             return JSON.parse(JSON.stringify({
                 status: 400,
                 message: "Please select at least one production line",
@@ -54,11 +54,11 @@ export async function getAllOrders(page: number = 1, limit: number = 10): Promis
         const skip = (page - 1) * limit;
         const orders = await OrderModel.find().populate('productionLineNo').skip(skip).limit(limit);
 
-        console.log('Orders:', orders);
+        // console.log('Orders:', orders);
 
         const predictedHours = await Promise.all(orders.map(async (order) => {
             const elapsedHours = (today.getTime() - order.createdAt.getTime()) / (1000 * 60 * 60);
-            console.log('Elapsed hours:', elapsedHours);
+            // console.log('Elapsed hours:', elapsedHours);
             const resp = await predict({
                 elapsed: 0,
                 emp: order?.productionLineNo?.reduce((acc: number, line: any) => acc + (line?.employeeIds?.length || 0), 0) || 0,

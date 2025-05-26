@@ -20,95 +20,109 @@ import { Ionicons } from "@expo/vector-icons";
 
 // Predefined container types
 const CONTAINERS = [
-  { type: "Small", size: [100, 100, 100], max_weight: 100 },
-  { type: "Medium", size: [150, 150, 150], max_weight: 200 },
-  { type: "Large", size: [200, 200, 200], max_weight: 500 },
+  {
+    type: "Small Truck",
+    size: [320, 170, 170], // cm
+    max_weight: 1000, // kg
+  },
+  {
+    type: "Medium Truck",
+    size: [500, 200, 200],
+    max_weight: 2000,
+  },
+  {
+    type: "20ft Container",
+    size: [589, 235, 239],
+    max_weight: 28000,
+  },
 ];
+
 
 // Predefined box materials
 const GARMENT_BOXES = [
   {
-    material_id: "1-small",
+    material_id: "cotton-small",
     material: "Cotton",
-    size: [20, 15, 10],
-    weight: 10,
+    size: [60, 40, 30], // L × W × H in cm
+    weight: 4, // Empty box weight in kg
     color: "red",
-    max_weight_upright: 50,
-    max_weight_rotated: 30,
+    max_weight_upright: 25,
+    max_weight_rotated: 15,
   },
   {
-    material_id: "1-medium",
+    material_id: "cotton-medium",
     material: "Cotton",
-    size: [30, 20, 15],
-    weight: 12,
+    size: [70, 50, 40],
+    weight: 5,
     color: "red",
-    max_weight_upright: 60,
-    max_weight_rotated: 40,
+    max_weight_upright: 35,
+    max_weight_rotated: 20,
   },
   {
-    material_id: "1-large",
+    material_id: "cotton-large",
     material: "Cotton",
-    size: [40, 30, 20],
-    weight: 15,
+    size: [80, 60, 50],
+    weight: 6,
     color: "red",
-    max_weight_upright: 80,
-    max_weight_rotated: 50,
-  },
-  {
-    material_id: "2-small",
-    material: "Silk",
-    size: [25, 20, 15],
-    weight: 8,
-    color: "blue",
-    max_weight_upright: 40,
+    max_weight_upright: 45,
     max_weight_rotated: 25,
   },
   {
-    material_id: "2-medium",
+    material_id: "silk-small",
     material: "Silk",
-    size: [35, 25, 20],
-    weight: 10,
+    size: [60, 40, 30],
+    weight: 3,
     color: "blue",
-    max_weight_upright: 50,
-    max_weight_rotated: 30,
+    max_weight_upright: 20,
+    max_weight_rotated: 12,
   },
   {
-    material_id: "2-large",
+    material_id: "silk-medium",
     material: "Silk",
-    size: [45, 35, 25],
-    weight: 13,
+    size: [70, 50, 40],
+    weight: 4,
     color: "blue",
-    max_weight_upright: 70,
-    max_weight_rotated: 40,
+    max_weight_upright: 30,
+    max_weight_rotated: 18,
   },
   {
-    material_id: "3-small",
-    material: "Denim",
-    size: [30, 25, 20],
-    weight: 12,
-    color: "green",
-    max_weight_upright: 70,
-    max_weight_rotated: 50,
+    material_id: "silk-large",
+    material: "Silk",
+    size: [80, 60, 50],
+    weight: 5,
+    color: "blue",
+    max_weight_upright: 40,
+    max_weight_rotated: 22,
   },
   {
-    material_id: "3-medium",
+    material_id: "denim-small",
     material: "Denim",
-    size: [40, 30, 25],
-    weight: 14,
+    size: [60, 40, 30],
+    weight: 5,
     color: "green",
-    max_weight_upright: 90,
-    max_weight_rotated: 60,
+    max_weight_upright: 35,
+    max_weight_rotated: 20,
   },
   {
-    material_id: "3-large",
+    material_id: "denim-medium",
     material: "Denim",
-    size: [50, 40, 30],
-    weight: 18,
+    size: [70, 50, 40],
+    weight: 6,
     color: "green",
-    max_weight_upright: 120,
-    max_weight_rotated: 80,
+    max_weight_upright: 45,
+    max_weight_rotated: 28,
+  },
+  {
+    material_id: "denim-large",
+    material: "Denim",
+    size: [80, 60, 50],
+    weight: 7,
+    color: "green",
+    max_weight_upright: 60,
+    max_weight_rotated: 35,
   },
 ];
+
 
 export default function PackingScreen() {
   const [boxData, setBoxData] = useState([]);
@@ -192,7 +206,7 @@ export default function PackingScreen() {
       );
 
       const text = await response.text();
-    
+
       let data;
 
       try {
@@ -251,15 +265,24 @@ export default function PackingScreen() {
                   style={styles.picker}
                   dropdownIconColor="#fff"
                 >
-                  <Picker.Item label="Select Material" value="" color="#000" />
-                  {GARMENT_BOXES.map((item) => (
-                    <Picker.Item
-                      key={item.material_id}
-                      label={`${item.material} - ${item.size} (${item.material_id})`}
-                      value={item.material_id}
-                      color="#000"
-                    />
-                  ))}
+                  <Picker.Item
+                    label="Select Garment Type"
+                    value=""
+                    color="#000"
+                  />
+                  {GARMENT_BOXES.map((item) => {
+                    const [width, depth, height] = item.size;
+                    const label = `${item.material} - (W: ${width} × D: ${depth} × H: ${height} cm)`;
+
+                    return (
+                      <Picker.Item
+                        key={item.material_id}
+                        label={label}
+                        value={item.material_id}
+                        color="#000"
+                      />
+                    );
+                  })}
                 </Picker>
               </View>
 
@@ -337,27 +360,32 @@ export default function PackingScreen() {
 
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>Select Container:</Text>
-              {CONTAINERS.map((container) => (
-                <TouchableOpacity
-                  key={container.type}
-                  style={[
-                    styles.containerOption,
-                    selectedContainer === container.type &&
-                      styles.containerOptionSelected,
-                  ]}
-                  onPress={() => setSelectedContainer(container.type)}
-                >
-                  <Text
+              {CONTAINERS.map((container) => {
+                const [w, d, h] = container.size;
+                const label = `${container.type} (W: ${w} × D: ${d} × H: ${h} cm, Max: ${container.max_weight} kg)`;
+
+                return (
+                  <TouchableOpacity
+                    key={container.type}
                     style={[
-                      styles.containerOptionText,
+                      styles.containerOption,
                       selectedContainer === container.type &&
-                        styles.containerOptionTextSelected,
+                        styles.containerOptionSelected,
                     ]}
+                    onPress={() => setSelectedContainer(container.type)}
                   >
-                    {container.type}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.containerOptionText,
+                        selectedContainer === container.type &&
+                          styles.containerOptionTextSelected,
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             <View style={styles.buttonRow}>
@@ -439,7 +467,10 @@ export default function PackingScreen() {
             {instructions.length > 0 && instructions[currentStep] && (
               <>
                 <View style={{ height: 300 }}>
-                  <Container3D instructions={instructions} currentStep={currentStep} />
+                  <Container3D
+                    instructions={instructions}
+                    currentStep={currentStep}
+                  />
                 </View>
 
                 <View style={styles.instructionContainer}>
@@ -449,7 +480,6 @@ export default function PackingScreen() {
                 </View>
               </>
             )}
-
 
             {/* <View style={styles.placeholder3D}>
                   <Ionicons name="cube" size={48} color="#8a9bae" />

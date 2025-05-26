@@ -73,12 +73,15 @@ const CreateProductionLineDialog = ({ employees }: { employees: IUser[] }) => {
                         ))}
                     </SelectContent>
                 </Select>
+                <br />
 
                 <span>Selected Employees:</span>
                 {
-                    newLine.employeeIds.length > 0 ? newLine.employeeIds.map((id) => (<Button key={id} variant={'outline'} className='py-2 px-2' onClick={() => removeEmployee(id)}>{employees.find((employee) => employee._id === id)?.name}</Button>)) : ''
+                    newLine.employeeIds.length > 0 ? newLine.employeeIds.map((id) => (<Button key={id} variant={'outline'} className='py-2 px-2' onClick={() => removeEmployee(id)}>{employees.find((employee) => employee._id === id)?.name + ' - ' + employees.find((employee) => employee._id === id)?.empId}</Button>)) : ''
                 }
 
+
+                <br />
                 <Button disabled={isAdding} className="w-full" onClick={handleAddNewLine}>Create Line</Button>
             </DialogContent>
         </Dialog>
