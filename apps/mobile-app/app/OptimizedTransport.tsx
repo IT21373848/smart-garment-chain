@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -9,7 +9,10 @@ import {
     SafeAreaView,
     StatusBar,
     TouchableOpacity,
-    FlatList
+    FlatList,
+    Modal,
+    TextInput,
+    Alert
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -93,6 +96,12 @@ function isIndividualTransportData(data: any): data is IndividualTransportData {
 const OptimizedTransport: React.FC<Props> = (props) => {
     const params = useLocalSearchParams();
     let transportData: any = undefined;
+    
+    // State for diesel price management
+    const [dieselPrice, setDieselPrice] = useState(274.00);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [tempDieselPrice, setTempDieselPrice] = useState('274.00');
+    const [adjustedCosts, setAdjustedCosts] = useState<{[key: string]: number}>({});
 
     if (props.transportData) {
         transportData = props.transportData;
@@ -105,6 +114,50 @@ const OptimizedTransport: React.FC<Props> = (props) => {
             console.error("Failed to parse transportData from params:", e);
         }
     }
+
+    const calculateAdjustedCost = (originalCost: number, newDieselPrice: number) => {
+        // Take 80% of the original cost, divide by 274, and multiply by new price
+        return (originalCost * 0.8 / 274) * newDieselPrice + (originalCost * 0.2);
+    };
+
+    const handleDieselPriceChange = () => {
+        const newPrice = parseFloat(tempDieselPrice);
+        if (isNaN(newPrice) || newPrice <= 0) {
+            Alert.alert('Invalid Price', 'Please enter a valid diesel price.');
+            return;
+        }
+        
+        setDieselPrice(newPrice);
+        
+        // Calculate adjusted costs for all routes
+        const newAdjustedCosts: {[key: string]: number} = {};
+        
+        if (isIndividualTransportData(transportData)) {
+            newAdjustedCosts['individual'] = calculateAdjustedCost(
+                transportData.vehicles.total_estimated_cost_LKR, 
+                newPrice
+            );
+        } else if (transportData.groupedRoutes) {
+            transportData.groupedRoutes.forEach((group: GroupedRoute) => {
+                newAdjustedCosts[`group_${group.groupId}`] = calculateAdjustedCost(
+                    group.vehicles.total_estimated_cost_LKR, 
+                    newPrice
+                );
+            });
+        }
+        
+        setAdjustedCosts(newAdjustedCosts);
+        setModalVisible(false);
+    };
+
+    const getDisplayCost = (originalCost: number, routeKey: string) => {
+        return adjustedCosts[routeKey] !== undefined ? adjustedCosts[routeKey] : originalCost;
+    };
+
+    const openDieselPriceModal = () => {
+        setTempDieselPrice(dieselPrice.toString());
+        setModalVisible(true);
+    };
 
     if (!transportData) {
         return (
@@ -122,7 +175,7 @@ const OptimizedTransport: React.FC<Props> = (props) => {
     if (isIndividualTransportData(transportData)) {
         const individualData = transportData;
         const vehicles = individualData.vehicles.vehicles;
-
+        const displayCost = getDisplayCost(individualData.vehicles.total_estimated_cost_LKR, 'individual');
 
         return (
             <SafeAreaView style={styles.container}>
@@ -148,7 +201,7 @@ const OptimizedTransport: React.FC<Props> = (props) => {
                             </View>
                             <View style={styles.dataRow}>
                                 <Text style={styles.dataLabel}>Estimated Cost:</Text>
-                                <Text style={styles.dataValue}>LKR {individualData.vehicles.total_estimated_cost_LKR.toLocaleString()}</Text>
+                                <Text style={styles.dataValue}>LKR {displayCost.toLocaleString()}</Text>
                             </View>
                             <View style={styles.dataRow}>
                                 <Text style={styles.dataLabel}>Vehicles:</Text>
@@ -158,8 +211,16 @@ const OptimizedTransport: React.FC<Props> = (props) => {
                                     keyExtractor={(item, index) => index.toString()}
                                 />
                             </View>
-
-
+                            
+                            {/* Diesel price info and change button */}
+                            <View style={styles.dieselPriceContainer}>
+                                <Text style={styles.dieselPriceText}>
+                                    Diesel 1L cost is LKR {dieselPrice.toFixed(2)}. 
+                                </Text>
+                                <TouchableOpacity onPress={openDieselPriceModal} style={styles.changeButton}>
+                                    <Text style={styles.changeButtonText}>Change</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
                         <TouchableOpacity
@@ -225,6 +286,46 @@ const OptimizedTransport: React.FC<Props> = (props) => {
                         </View>
                     </View>
                 </ScrollView>
+
+                {/* Diesel Price Modal */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContainer}>
+                            <Text style={styles.modalTitle}>Update Diesel Price</Text>
+                            <Text style={styles.modalSubtitle}>Enter current diesel price per liter (LKR)</Text>
+                            
+                            <TextInput
+                                style={styles.modalInput}
+                                value={tempDieselPrice}
+                                onChangeText={setTempDieselPrice}
+                                keyboardType="numeric"
+                                placeholder="274.00"
+                                placeholderTextColor="#8a9bae"
+                            />
+                            
+                            <View style={styles.modalButtons}>
+                                <TouchableOpacity 
+                                    style={[styles.modalButton, styles.cancelButton]} 
+                                    onPress={() => setModalVisible(false)}
+                                >
+                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                    style={[styles.modalButton, styles.applyButton]} 
+                                    onPress={handleDieselPriceChange}
+                                >
+                                    <Text style={styles.applyButtonText}>Apply</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
             </SafeAreaView>
         );
     }
@@ -255,116 +356,170 @@ const OptimizedTransport: React.FC<Props> = (props) => {
             </View>
 
             <ScrollView style={styles.content}>
-                {transportData.groupedRoutes.map((group: GroupedRoute) => (
-                    <View key={group.groupId} style={styles.formContainer}>
-                        <View style={styles.groupHeader}>
-                            <Text style={styles.groupTitle}>Route Group {group.groupId}</Text>
-                            <View style={styles.groupBadge}>
-                                <Text style={styles.groupBadgeText}>{group.destinations.length} stops</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.sectionContainer}>
-                            <Text style={styles.sectionTitle}>Vehicle Information</Text>
-                            <View style={styles.dataRow}>
-                                <Text style={styles.dataLabel}>Strategy:</Text>
-                                <Text style={styles.dataValue}>{group.vehicles.strategy}</Text>
-                            </View>
-                            <View style={styles.dataRow}>
-                                <Text style={styles.dataLabel}>Total Distance:</Text>
-                                <Text style={styles.dataValue}>
-                                    {group.vehicles?.total_distance_km !== undefined ? `${group.vehicles.total_distance_km.toFixed(2)} km` : 'N/A'}
-                                </Text>
-                            </View>
-                            <View style={styles.dataRow}>
-                                <Text style={styles.dataLabel}>Estimated Cost:</Text>
-                                <Text style={styles.dataValue}>LKR {group.vehicles.total_estimated_cost_LKR.toLocaleString()}</Text>
-                            </View>
-                            <View style={styles.dataRow}>
-                                <Text style={styles.dataLabel}>Vehicles Needed:</Text>
-                            </View>
-                            <View style={styles.dataRow}>
-                                <FlatList
-                                    data={group.vehicles.vehicles}
-                                    renderItem={({ item, index }) => (
-                                        <View style={styles.dataRow}>
-                                            <Text style={styles.dataValue}>{index + 1}. {item}</Text>
-                                        </View>
-                                    )}
-                                    keyExtractor={(item, index) => index.toString()}
-                                />
-                            </View>
-                        </View>
-
-                        <TouchableOpacity
-                            style={styles.mapButton}
-                            onPress={() => Linking.openURL(group.route.routeLink)}
-                        >
-                            <Ionicons name="map" size={20} color="#fff" />
-                            <Text style={styles.buttonText}>View Route on Google Maps</Text>
-                        </TouchableOpacity>
-
-                        <Text style={styles.sectionTitle}>Destinations</Text>
-                        {group.destinations.map((destination, index) => (
-                            <View key={index} style={styles.destinationContainer}>
-                                <View style={styles.destinationHeader}>
-                                    <Text style={styles.destinationTitle}>Stop {index + 1}</Text>
+                {transportData.groupedRoutes.map((group: GroupedRoute) => {
+                    const displayCost = getDisplayCost(group.vehicles.total_estimated_cost_LKR, `group_${group.groupId}`);
+                    
+                    return (
+                        <View key={group.groupId} style={styles.formContainer}>
+                            <View style={styles.groupHeader}>
+                                <Text style={styles.groupTitle}>Route Group {group.groupId}</Text>
+                                <View style={styles.groupBadge}>
+                                    <Text style={styles.groupBadgeText}>{group.destinations.length} stops</Text>
                                 </View>
+                            </View>
 
+                            <View style={styles.sectionContainer}>
+                                <Text style={styles.sectionTitle}>Vehicle Information</Text>
                                 <View style={styles.dataRow}>
-                                    <Text style={styles.dataLabel}>Coordinates:</Text>
+                                    <Text style={styles.dataLabel}>Strategy:</Text>
+                                    <Text style={styles.dataValue}>{group.vehicles.strategy}</Text>
+                                </View>
+                                <View style={styles.dataRow}>
+                                    <Text style={styles.dataLabel}>Total Distance:</Text>
                                     <Text style={styles.dataValue}>
-                                        {destination.lat}, {destination.lng}
+                                        {group.vehicles?.total_distance_km !== undefined ? `${group.vehicles.total_distance_km.toFixed(2)} km` : 'N/A'}
                                     </Text>
                                 </View>
+                                <View style={styles.dataRow}>
+                                    <Text style={styles.dataLabel}>Estimated Cost:</Text>
+                                    <Text style={styles.dataValue}>LKR {displayCost.toLocaleString()}</Text>
+                                </View>
+                                <View style={styles.dataRow}>
+                                    <Text style={styles.dataLabel}>Vehicles Needed:</Text>
+                                </View>
+                                <View style={styles.dataRow}>
+                                    <FlatList
+                                        data={group.vehicles.vehicles}
+                                        renderItem={({ item, index }) => (
+                                            <View style={styles.dataRow}>
+                                                <Text style={styles.dataValue}>{index + 1}. {item}</Text>
+                                            </View>
+                                        )}
+                                        keyExtractor={(item, index) => index.toString()}
+                                    />
+                                </View>
+                                
+                                {/* Diesel price info and change button */}
+                                <View style={styles.dieselPriceContainer}>
+                                    <Text style={styles.dieselPriceText}>
+                                        Diesel 1L cost is LKR {dieselPrice.toFixed(2)}. 
+                                    </Text>
+                                    <TouchableOpacity onPress={openDieselPriceModal} style={styles.changeButton}>
+                                        <Text style={styles.changeButtonText}>Change</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
 
-                                <Text style={styles.subSectionTitle}>Deliveries</Text>
-                                {destination.deliveries.map((delivery, idx) => (
-                                    <View key={idx} style={styles.deliveryContainer}>
-                                        <View style={styles.deliveryHeader}>
-                                            <Text style={styles.deliveryTitle}>Delivery {idx + 1}</Text>
+                            <TouchableOpacity
+                                style={styles.mapButton}
+                                onPress={() => Linking.openURL(group.route.routeLink)}
+                            >
+                                <Ionicons name="map" size={20} color="#fff" />
+                                <Text style={styles.buttonText}>View Route on Google Maps</Text>
+                            </TouchableOpacity>
+
+                            <Text style={styles.sectionTitle}>Destinations</Text>
+                            {group.destinations.map((destination, index) => (
+                                <View key={index} style={styles.destinationContainer}>
+                                    <View style={styles.destinationHeader}>
+                                        <Text style={styles.destinationTitle}>Stop {index + 1}</Text>
+                                    </View>
+
+                                    <View style={styles.dataRow}>
+                                        <Text style={styles.dataLabel}>Coordinates:</Text>
+                                        <Text style={styles.dataValue}>
+                                            {destination.lat}, {destination.lng}
+                                        </Text>
+                                    </View>
+
+                                    <Text style={styles.subSectionTitle}>Deliveries</Text>
+                                    {destination.deliveries.map((delivery, idx) => (
+                                        <View key={idx} style={styles.deliveryContainer}>
+                                            <View style={styles.deliveryHeader}>
+                                                <Text style={styles.deliveryTitle}>Delivery {idx + 1}</Text>
+                                            </View>
+                                            <View style={styles.rowInputs}>
+                                                <View style={styles.halfInput}>
+                                                    <Text style={styles.inputLabel}>Volume:</Text>
+                                                    <Text style={styles.dataValue}>{delivery.volume_cft} CFT</Text>
+                                                </View>
+                                                <View style={styles.halfInput}>
+                                                    <Text style={styles.inputLabel}>Weight:</Text>
+                                                    <Text style={styles.dataValue}>{delivery.weight_kg} KG</Text>
+                                                </View>
+                                            </View>
                                         </View>
-                                        <View style={styles.rowInputs}>
-                                            <View style={styles.halfInput}>
-                                                <Text style={styles.inputLabel}>Volume:</Text>
-                                                <Text style={styles.dataValue}>{delivery.volume_cft} CFT</Text>
-                                            </View>
-                                            <View style={styles.halfInput}>
-                                                <Text style={styles.inputLabel}>Weight:</Text>
-                                                <Text style={styles.dataValue}>{delivery.weight_kg} KG</Text>
-                                            </View>
+                                    ))}
+                                </View>
+                            ))}
+
+                            <View style={styles.weatherContainer}>
+                                <Text style={styles.sectionTitle}>Weather Conditions</Text>
+                                {group.weather.map((w, idx) => (
+                                    <View key={idx} style={styles.weatherCard}>
+                                        <Image
+                                            source={{ uri: `https://openweathermap.org/img/wn/${w.weather[0].icon}@2x.png` }}
+                                            style={styles.weatherIcon}
+                                        />
+                                        <View style={styles.weatherInfo}>
+                                            <Text style={styles.weatherLocation}>{w.name}</Text>
+                                            <Text style={styles.weatherDescription}>
+                                                {w.weather[0].description}
+                                            </Text>
+                                            <Text style={styles.weatherDetail}>
+                                                Temperature: {w.main.temp}°C
+                                            </Text>
+                                            <Text style={styles.weatherDetail}>
+                                                Humidity: {w.main.humidity}%
+                                            </Text>
                                         </View>
                                     </View>
                                 ))}
                             </View>
-                        ))}
+                        </View>
+                    );
+                })}
+            </ScrollView>
 
-                        <View style={styles.weatherContainer}>
-                            <Text style={styles.sectionTitle}>Weather Conditions</Text>
-                            {group.weather.map((w, idx) => (
-                                <View key={idx} style={styles.weatherCard}>
-                                    <Image
-                                        source={{ uri: `https://openweathermap.org/img/wn/${w.weather[0].icon}@2x.png` }}
-                                        style={styles.weatherIcon}
-                                    />
-                                    <View style={styles.weatherInfo}>
-                                        <Text style={styles.weatherLocation}>{w.name}</Text>
-                                        <Text style={styles.weatherDescription}>
-                                            {w.weather[0].description}
-                                        </Text>
-                                        <Text style={styles.weatherDetail}>
-                                            Temperature: {w.main.temp}°C
-                                        </Text>
-                                        <Text style={styles.weatherDetail}>
-                                            Humidity: {w.main.humidity}%
-                                        </Text>
-                                    </View>
-                                </View>
-                            ))}
+            {/* Diesel Price Modal */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Update Diesel Price</Text>
+                        <Text style={styles.modalSubtitle}>Enter current diesel price per liter (LKR)</Text>
+                        
+                        <TextInput
+                            style={styles.modalInput}
+                            value={tempDieselPrice}
+                            onChangeText={setTempDieselPrice}
+                            keyboardType="numeric"
+                            placeholder="274.00"
+                            placeholderTextColor="#8a9bae"
+                        />
+                        
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity 
+                                style={[styles.modalButton, styles.cancelButton]} 
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                                style={[styles.modalButton, styles.applyButton]} 
+                                onPress={handleDieselPriceChange}
+                            >
+                                <Text style={styles.applyButtonText}>Apply</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                ))}
-            </ScrollView>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -566,8 +721,94 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontWeight: '500',
     },
-
-
+    // New styles for diesel price feature
+    dieselPriceContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 12,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: '#34495e',
+    },
+    dieselPriceText: {
+        fontSize: 12,
+        color: '#8a9bae',
+        flex: 1,
+    },
+    changeButton: {
+        backgroundColor: '#e67e22',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 4,
+        marginLeft: 8,
+    },
+    changeButtonText: {
+        color: '#ffffff',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    // Modal styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        backgroundColor: '#192841',
+        borderRadius: 12,
+        padding: 24,
+        width: '80%',
+        maxWidth: 300,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#ffffff',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    modalSubtitle: {
+        fontSize: 14,
+        color: '#8a9bae',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    modalInput: {
+        backgroundColor: '#253958',
+        borderRadius: 8,
+        padding: 12,
+        color: '#ffffff',
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    modalButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        marginHorizontal: 5,
+    },
+    cancelButton: {
+        backgroundColor: '#7f8c8d',
+    },
+    applyButton: {
+        backgroundColor: '#27ae60',
+    },
+    cancelButtonText: {
+        color: '#ffffff',
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
+    applyButtonText: {
+        color: '#ffffff',
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
 });
 
 export default OptimizedTransport;
