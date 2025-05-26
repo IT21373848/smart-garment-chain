@@ -84,8 +84,6 @@ GARMENT_BOXES = [
     }
 ]
 
-
-
 CONTAINERS = [
     {
         "type": "Small Truck",
