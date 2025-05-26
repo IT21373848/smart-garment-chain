@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useTransition } from 'react'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -7,17 +7,33 @@ import { Input } from '@/components/ui/input'
 import { convertToTimeRemaining } from '../../../utils/functions'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { CLOTHING_ITEMS } from '../../../config/config'
+import { updateOrderById } from '../../../actions/orders/order'
+import { toast } from 'sonner'
 type Props = {
     invc: any
 }
 
 const UpdateProductionModal = ({ invc }: Props) => {
     const [invoice, setInvoice] = React.useState(JSON.parse(invc))
+    const [isUpdating, startUpdating] = useTransition()
 
     const updateField = (key: string, value: any) => {
         setInvoice({
             ...invoice,
             [key]: value,
+        })
+    }
+
+    const handleUpdate = () => {
+        startUpdating(async () => {
+            try {
+                const resp = await updateOrderById(invoice._id, invoice)
+                if (resp?.status !== 200) throw new Error(resp.message)
+                toast.success(resp?.message || 'Line created successfully')
+            } catch (error: any) {
+                console.log(error)
+                toast.error(error.message)
+            }
         })
     }
     return (
@@ -82,7 +98,7 @@ const UpdateProductionModal = ({ invc }: Props) => {
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="submit">Update</Button>
+                        <Button type="submit" onClick={handleUpdate}>Update</Button>
                     </DialogClose>
                 </DialogFooter>
             </DialogContent>
